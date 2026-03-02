@@ -1,4 +1,4 @@
-# 🌍 Erasmus Globe-Trotter Pro 2026
+# 🌍 Student Globe-Trotter Pro 2026
 
 > **Comparer les budgets Erasmus dans 350 villes sur 6 continents — en français, anglais et espagnol.**
 
@@ -122,8 +122,8 @@ erasmus-globe-trotter/
 
 **Elio** — étudiant, passionné de dev et de voyages.
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-blue?style=flat&logo=linkedin)](https://linkedin.com/in/TON_PROFIL)
-[![GitHub](https://img.shields.io/badge/GitHub-black?style=flat&logo=github)](https://github.com/TON_USERNAME)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-blue?style=flat&logo=linkedin)](https://linkedin.com/in/Elio-HammRisch)
+[![GitHub](https://img.shields.io/badge/GitHub-black?style=flat&logo=github)](https://github.com/Elio-code)
 
 ---
 

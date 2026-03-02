@@ -2206,7 +2206,7 @@ const LANGS = {
     search:"Ville ou pays...", allContinents:"Tous",
     sortAZ:"Tri : A → Z", sortCheap:"Tri : Moins cher", sortExpensive:"Tri : Plus cher",
     randomBtn:"🎲", battleBtn:"⚔️ Battle", battleQuit:"⚔️ Quitter",
-    budgetTitle:"Calculateur de Budget Erasmus",
+    budgetTitle:"Calculateur de Budget Etudiant",
     budgetSavings:"Mes économies disponibles (€)",
     budgetMonthly:"Mon budget mensuel complémentaire (€/mois)",
     budgetMonths:"mois", budgetForever:"∞ pour toujours",
@@ -2231,7 +2231,7 @@ const LANGS = {
     englishLevel:"Anglais",
     repartition:"RÉPARTITION", detail:"DÉTAIL",
     catLabels:{logement:"🏠 Logement",courses:"🛒 Courses",restos:"🍽️ Restos",nocturne:"🍺 Vie Nocturne",transport:"🚇 Transport",sante:"❤️ Santé",telecom:"📱 Télécom",voyage:"✈️ Voyages"},
-    presetDesc:{survival:"Économies max — pâtes et covoiturage", standard:"Vie équilibrée — l'expérience Erasmus typique", golden:"Pas de limite — vis ta meilleure vie"},
+    presetDesc:{survival:"Économies max — pâtes et covoiturage", standard:"Vie équilibrée — l'expérience Etudiante typique", golden:"Pas de limite — vis ta meilleure vie"},
   },
   en:{
     appSubtitle:"Globe-Trotter Pro 2026 🌍",
@@ -2239,7 +2239,7 @@ const LANGS = {
     search:"City or country...", allContinents:"All",
     sortAZ:"Sort: A → Z", sortCheap:"Sort: Cheapest", sortExpensive:"Sort: Most expensive",
     randomBtn:"🎲", battleBtn:"⚔️ Battle", battleQuit:"⚔️ Quit",
-    budgetTitle:"Erasmus Budget Calculator",
+    budgetTitle:"Student Budget Calculator",
     budgetSavings:"My available savings (€)",
     budgetMonthly:"My monthly income (€/month)",
     budgetMonths:"months", budgetForever:"∞ forever",
@@ -2264,7 +2264,7 @@ const LANGS = {
     englishLevel:"English",
     repartition:"BREAKDOWN", detail:"DETAIL",
     catLabels:{logement:"🏠 Housing",courses:"🛒 Groceries",restos:"🍽️ Restaurants",nocturne:"🍺 Nightlife",transport:"🚇 Transport",sante:"❤️ Health",telecom:"📱 Telecom",voyage:"✈️ Travel"},
-    presetDesc:{survival:"Max savings — pasta and carpooling", standard:"Balanced life — the typical Erasmus experience", golden:"No limits — live your best life"},
+    presetDesc:{survival:"Max savings — pasta and carpooling", standard:"Balanced life — the typical Student experience", golden:"No limits — live your best life"},
   },
   es:{
     appSubtitle:"Globe-Trotter Pro 2026 🌍",
@@ -2272,7 +2272,7 @@ const LANGS = {
     search:"Ciudad o país...", allContinents:"Todos",
     sortAZ:"Orden: A → Z", sortCheap:"Orden: Más barato", sortExpensive:"Orden: Más caro",
     randomBtn:"🎲", battleBtn:"⚔️ Batalla", battleQuit:"⚔️ Salir",
-    budgetTitle:"Calculadora de Presupuesto Erasmus",
+    budgetTitle:"Calculadora de Presupuesto Estudiante",
     budgetSavings:"Mis ahorros disponibles (€)",
     budgetMonthly:"Mi ingreso mensual complementario (€/mes)",
     budgetMonths:"meses", budgetForever:"∞ para siempre",
@@ -2297,7 +2297,7 @@ const LANGS = {
     englishLevel:"Inglés",
     repartition:"DESGLOSE", detail:"DETALLE",
     catLabels:{logement:"🏠 Alojamiento",courses:"🛒 Compras",restos:"🍽️ Restaurantes",nocturne:"🍺 Vida Nocturna",transport:"🚇 Transporte",sante:"❤️ Salud",telecom:"📱 Telecom",voyage:"✈️ Viajes"},
-    presetDesc:{survival:"Ahorro máximo — pasta y coche compartido", standard:"Vida equilibrada — la experiencia Erasmus típica", golden:"Sin límites — vive tu mejor vida"},
+    presetDesc:{survival:"Ahorro máximo — pasta y coche compartido", standard:"Vida equilibrada — la experiencia Estudiante típica", golden:"Sin límites — vive tu mejor vida"},
   },
 };
 
@@ -2380,7 +2380,7 @@ function BudgetMeter({total,t,darkMode=true}){
         <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,#1A936F,${color})`,borderRadius:99,transition:"width 0.6s ease"}}/>
       </div>
       <div style={{display:"flex",justifyContent:"space-between",marginTop:5,fontSize:10,color:"#4a5568",fontFamily:"'Space Mono',monospace"}}>
-        <span>{t.refErasmus} : {BUDGET_REF} €</span><span>{t.alert} : {BUDGET_WARN} €</span>
+        <span>{t.refEtudiant} : {BUDGET_REF} €</span><span>{t.alert} : {BUDGET_WARN} €</span>
       </div>
       {over&&<div style={{marginTop:9,padding:"8px 12px",background:"rgba(255,77,77,0.08)",border:"1px solid rgba(255,77,77,0.22)",borderRadius:8,fontSize:12,color:"#FF6B6B"}}>⚠️ +{diff} € au-dessus du seuil.</div>}
       {mid&&<div style={{marginTop:9,padding:"8px 12px",background:"rgba(255,215,0,0.07)",border:"1px solid rgba(255,215,0,0.18)",borderRadius:8,fontSize:12,color:"#FFD700"}}>💡 +{diff} € — gérable !</div>}
@@ -3015,7 +3015,7 @@ export default function App(){
         <div style={{maxWidth:1400,margin:"0 auto"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap"}}>
             <div>
-              <div style={{fontSize:9,color:"#FF6B35",fontFamily:"'Space Mono',monospace",letterSpacing:2.5}}>ERASMUS</div>
+              <div style={{fontSize:9,color:"#FF6B35",fontFamily:"'Space Mono',monospace",letterSpacing:2.5}}>Etudiant</div>
               <h1 style={{fontSize:isMobile?14:19,fontWeight:800,background:"linear-gradient(135deg,#FF6B35,#FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",lineHeight:1.2,whiteSpace:"nowrap"}}>{t.appSubtitle}</h1>
             </div>
             <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
@@ -3198,7 +3198,7 @@ export default function App(){
       </div>
 
       <div style={{borderTop:"1px solid rgba(255,255,255,0.04)",padding:"10px 24px",textAlign:"center",fontSize:10,color:"#2d3748",fontFamily:"'Space Mono',monospace"}}>
-        ERASMUS GLOBE-TROTTER PRO 2026 · MADE WITH ❤️ BY ELIO
+        ETUDIANT GLOBE-TROTTER PRO 2026 · MADE WITH ❤️ BY ELIO
       </div>
     </div>
   );

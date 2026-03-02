@@ -2,7 +2,7 @@
 
 > **Comparer les budgets Erasmus dans 350 villes sur 6 continents — en français, anglais et espagnol.**
 
-🔗 **[→ Voir le site en ligne](https://erasmus-globe-trotter.vercel.app)**
+🔗 **[→ Voir le site en ligne]( student-globe-trotter.vercel.app)**
 
 ---
 

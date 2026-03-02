@@ -3198,7 +3198,7 @@ export default function App(){
       </div>
 
       <div style={{borderTop:"1px solid rgba(255,255,255,0.04)",padding:"10px 24px",textAlign:"center",fontSize:10,color:"#2d3748",fontFamily:"'Space Mono',monospace"}}>
-        ETUDIANT GLOBE-TROTTER PRO 2026 · MADE WITH ❤️ BY ELIO
+        STUDENT GLOBE-TROTTER PRO 2026 · MADE WITH ❤️ BY ELIO
       </div>
     </div>
   );

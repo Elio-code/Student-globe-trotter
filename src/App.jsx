@@ -3057,7 +3057,7 @@ function CategoryPanel({activeKeys,setActiveKeys,extraCost,setExtraCost,extraLab
   const toggle=key=>setActiveKeys(prev=>prev.includes(key)?prev.filter(k=>k!==key):[...prev,key]);
   const allOn=activeKeys.length===ALL_CAT_KEYS.length;
   return(
-    <div style={{background:{$darkMode?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)"},borderRadius:12,padding:"14px 16px",border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}}>
+    <div style={{background:darkMode?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)",borderRadius:12,padding:"14px 16px",border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
         <span style={{fontSize:10,color:"#718096",fontFamily:"'Space Mono',monospace",letterSpacing:1}}>{t.activeCats}</span>
         <button onClick={()=>setActiveKeys(allOn?[]:ALL_CAT_KEYS)} style={{fontSize:10,padding:"2px 8px",borderRadius:6,border:`1px solid ${dm?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.15)"}`,background:"transparent",color:"#718096",cursor:"pointer"}}>{allOn?t.uncheckAll:t.checkAll}</button>
@@ -3080,7 +3080,7 @@ function CategoryPanel({activeKeys,setActiveKeys,extraCost,setExtraCost,extraLab
         <div style={{display:"flex",gap:8}}>
           <input value={extraLabel} onChange={e=>setExtraLabel(e.target.value)} placeholder={t.otherPlaceholder} style={{flex:2,padding:"7px 10px",background:dm?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.04)",border:dm?"1px solid rgba(255,255,255,0.1)":"1px solid rgba(0,0,0,0.12)",borderRadius:8,color:dm?"#f7fafc":"#1a202c",fontSize:12,outline:"none"}}/>
           <div style={{position:"relative",flex:1}}>
-            <input type="number" min="0" value={extraCost||""} onChange={e=>setExtraCost(Math.max(0,parseInt(e.target.value)||0))} placeholder="0" style={{width:"100%",padding:"7px 28px 7px 10px",background:{$darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},border:`1px solid ${darkMode?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.18)"}`,borderRadius:8,color:"#FFD700",fontSize:13,fontWeight:700,outline:"none",fontFamily:"'Space Mono',monospace"}}/>
+            <input type="number" min="0" value={extraCost||""} onChange={e=>setExtraCost(Math.max(0,parseInt(e.target.value)||0))} placeholder="0" style={{width:"100%",padding:"7px 28px 7px 10px",background:darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)",border:`1px solid ${darkMode?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.18)"}`,borderRadius:8,color:"#FFD700",fontSize:13,fontWeight:700,outline:"none",fontFamily:"'Space Mono',monospace"}}/>
             <span style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",color:"#718096",fontSize:11,pointerEvents:"none"}}>€</span>
           </div>
         </div>
@@ -3361,11 +3361,11 @@ function BudgetInput({label,val,set,color}){
   const holdUp=useHoldStep(set,1);
   const holdDn=useHoldStep(set,-1);
   return(
-    <div style={{background:{$darkMode?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)"},borderRadius:12,padding:"16px",border:`1px solid ${color}30`}}>
+    <div style={{background:darkMode?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)",borderRadius:12,padding:"16px",border:`1px solid ${color}30`}}>
       <div style={{fontSize:11,color:"#718096",marginBottom:8}}>{label}</div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
         <input type="number" min="0" value={val} onChange={e=>set(Math.max(0,parseInt(e.target.value)||0))}
-          style={{flex:1,padding:"10px 14px",background:{$darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"},border:`1px solid ${color}50`,borderRadius:9,color,fontSize:20,fontWeight:800,fontFamily:"'Space Mono',monospace",outline:"none",width:"100%"}}/>
+          style={{flex:1,padding:"10px 14px",background:darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)",border:`1px solid ${color}50`,borderRadius:9,color,fontSize:20,fontWeight:800,fontFamily:"'Space Mono',monospace",outline:"none",width:"100%"}}/>
         <div style={{display:"flex",flexDirection:"column",gap:3}}>
           <button {...holdUp} style={{width:32,height:28,borderRadius:7,border:`1px solid ${color}40`,background:`${color}15`,color,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",userSelect:"none",lineHeight:1}}>▲</button>
           <button {...holdDn} style={{width:32,height:28,borderRadius:7,border:`1px solid ${color}40`,background:`${color}15`,color,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",userSelect:"none",lineHeight:1}}>▼</button>
@@ -3425,16 +3425,16 @@ function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="f
             </button>
           ))}
         </div>
-        <select value={sortBudget} onChange={e=>setSortBudget(e.target.value)} style={{marginLeft:"auto",padding:"5px 10px",background:{$dm?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},border:`1px solid ${dm?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.18)"}`,borderRadius:8,color:"#a0aec0",fontSize:12,outline:"none",cursor:"pointer"}}>
+        <select value={sortBudget} onChange={e=>setSortBudget(e.target.value)} style={{marginLeft:"auto",padding:"5px 10px",background:dm?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)",border:`1px solid ${dm?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.18)"}`,borderRadius:8,color:"#a0aec0",fontSize:12,outline:"none",cursor:"pointer"}}>
           <option value="asc">{t.sortCheap}</option>
           <option value="desc">{t.sortExpensive}</option>
         </select>
       </div>
 
       {/* Table */}
-      <div style={{background:{$dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.15)"},borderRadius:14,border:`1px solid ${dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`,overflow:"hidden"}}>
+      <div style={{background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.15)",borderRadius:14,border:`1px solid ${dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`,overflow:"hidden"}}>
         {/* Header */}
-        <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 2fr 1fr",gap:8,padding:"10px 16px",background:{$dm?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)"},borderBottom:`1px solid ${dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`,fontSize:10,color:"#4a5568",fontFamily:"'Space Mono',monospace",letterSpacing:1}}>
+        <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 2fr 1fr",gap:8,padding:"10px 16px",background:dm?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)",borderBottom:`1px solid ${dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`,fontSize:10,color:"#4a5568",fontFamily:"'Space Mono',monospace",letterSpacing:1}}>
           <span>{t.budgetTableCity}</span>
           <span style={{textAlign:"right"}}>{t.budgetTableCost}</span>
           <span style={{textAlign:"center"}}>{t.budgetTableMonths}</span>
@@ -3461,7 +3461,7 @@ function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="f
                 {/* Cost bar */}
                 <div style={{textAlign:"right"}}>
                   <div style={{fontSize:12,fontWeight:700,color:"#FF6B35",fontFamily:"'Space Mono',monospace"}}>{cost} €</div>
-                  <div style={{height:3,background:{$dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"},borderRadius:99,marginTop:3}}>
+                  <div style={{height:3,background:dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)",borderRadius:99,marginTop:3}}>
                     <div style={{height:"100%",width:`${pct}%`,background:"#FF6B35",borderRadius:99}}/>
                   </div>
                 </div>
@@ -3472,7 +3472,7 @@ function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="f
                       {months===Infinity?t.budgetForever:`${months} ${t.budgetMonths}`}
                     </span>
                   </div>
-                  <div style={{height:6,background:{$dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"},borderRadius:99,marginTop:4}}>
+                  <div style={{height:6,background:dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)",borderRadius:99,marginTop:4}}>
                     <div style={{height:"100%",width:`${Math.min(monthsPct,100)}%`,background:`linear-gradient(90deg,${durationColor}88,${durationColor})`,borderRadius:99,transition:"width 0.4s"}}/>
                   </div>
                 </div>
@@ -3938,7 +3938,7 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
             </div>
           ))}
         </div>
-        {!geodata&&<div style={{position:"absolute",top:10,left:12,fontSize:10,color:{$dm?"rgba(255,255,255,0.4)":"rgba(0,0,0,0.18)"},background:"rgba(0,0,0,0.4)",padding:"3px 8px",borderRadius:6}}>Chargement carte HD…</div>}
+        {!geodata&&<div style={{position:"absolute",top:10,left:12,fontSize:10,color:dm?"rgba(255,255,255,0.4)":"rgba(0,0,0,0.18)",background:"rgba(0,0,0,0.4)",padding:"3px 8px",borderRadius:6}}>Chargement carte HD…</div>}
       </div>
 
         {/* ── RIGHT PANEL ── */}
@@ -4128,13 +4128,13 @@ export default function App(){
               {/* Dark/Light mode toggle */}
               <button onClick={()=>setDarkMode(!darkMode)} style={{padding:"4px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.08)",color:darkMode?"#FFD700":"#FF6B35",cursor:"pointer",fontSize:16,transition:"all 0.2s",lineHeight:1}}>{darkMode?"☀️":"🌙"}</button>
               {/* Language switcher */}
-              <div style={{display:"flex",gap:2,background:{$darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},padding:2,borderRadius:8,border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}}>
+              <div style={{display:"flex",gap:2,background:darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)",padding:2,borderRadius:8,border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}}>
                 {[{code:"fr",flag:"🇫🇷"},{code:"en",flag:"🇬🇧"},{code:"es",flag:"🇪🇸"}].map(({code,flag})=>(
                   <button key={code} onClick={()=>setLang(code)} style={{padding:"4px 8px",borderRadius:6,border:"none",cursor:"pointer",background:lang===code?"rgba(255,107,53,0.25)":"transparent",fontSize:14,transition:"all 0.2s",opacity:lang===code?1:0.5}}>{flag}</button>
                 ))}
               </div>
               {/* Presets */}
-              <div style={{display:"flex",gap:2,background:{$darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},padding:2,borderRadius:8,border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}}>
+              <div style={{display:"flex",gap:2,background:darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)",padding:2,borderRadius:8,border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}}>
                 {Object.entries(PRESETS).map(([key,p])=>(
                   <button key={key} onClick={()=>setPreset(key)} style={{padding:isMobile?"4px 7px":"5px 10px",borderRadius:6,border:"none",cursor:"pointer",background:preset===key?p.color:"transparent",color:preset===key?"#0d1117":"#718096",fontWeight:preset===key?700:400,fontSize:isMobile?10:11,transition:"all 0.2s"}}>{p.label}</button>
                 ))}
@@ -4147,7 +4147,7 @@ export default function App(){
           </div>
 
           {/* Tabs */}
-          <div style={{display:"flex",gap:2,marginTop:10,background:{$darkMode?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)"},borderRadius:10,padding:3,border:`1px solid ${darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`,width:"fit-content"}}>
+          <div style={{display:"flex",gap:2,marginTop:10,background:darkMode?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)",borderRadius:10,padding:3,border:`1px solid ${darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`,width:"fit-content"}}>
             {TABS.map(tab=>(
               <button key={tab.id} onClick={()=>{setActiveTab(tab.id);setBattleMode(false);}} style={{padding:"6px 14px",borderRadius:7,border:"none",cursor:"pointer",background:activeTab===tab.id?"rgba(255,107,53,0.2)":"transparent",color:activeTab===tab.id?"#FF6B35":darkMode?"#718096":"#4a5568",fontWeight:activeTab===tab.id?700:400,fontSize:isMobile?11:12,transition:"all 0.2s",whiteSpace:"nowrap"}}>{tab.label}</button>
             ))}
@@ -4218,12 +4218,12 @@ export default function App(){
 
               {/* Sort + random */}
               <div style={{display:"flex",gap:6}}>
-                <select value={sortOrder} onChange={e=>setSortOrder(e.target.value)} style={{flex:1,padding:"7px 8px",background:{$darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`,borderRadius:8,color:"#a0aec0",fontSize:12,outline:"none",cursor:"pointer"}}>
+                <select value={sortOrder} onChange={e=>setSortOrder(e.target.value)} style={{flex:1,padding:"7px 8px",background:darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)",border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`,borderRadius:8,color:"#a0aec0",fontSize:12,outline:"none",cursor:"pointer"}}>
                   <option value="az">{t.sortAZ}</option>
                   <option value="price-asc">{t.sortCheap}</option>
                   <option value="price-desc">{t.sortExpensive}</option>
                 </select>
-                <button onClick={randomCity} title="Random" style={{padding:"7px 11px",borderRadius:8,border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`,background:{$darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},color:"#a0aec0",cursor:"pointer",fontSize:15}}>{t.randomBtn}</button>
+                <button onClick={randomCity} title="Random" style={{padding:"7px 11px",borderRadius:8,border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`,background:darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)",color:"#a0aec0",cursor:"pointer",fontSize:15}}>{t.randomBtn}</button>
               </div>
 
               {/* Category filter toggle */}

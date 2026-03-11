@@ -3302,12 +3302,90 @@ function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="f
 }
 
 // ── MAP VIEW ──
+// ISO 3166-1 numeric → continent mapping (comprehensive)
+const _mk2=(ids,n)=>Object.fromEntries(ids.map(id=>[id,n]));
+const ISO_CONT={
+  // EUROPE
+  ..._mk2([8,20,40,56,70,100,112,191,196,203,208,233,246,250,276,292,300,
+    336,348,352,372,380,428,438,440,442,470,492,498,499,528,578,616,620,
+    642,674,688,703,705,724,752,756,804,807,826,831,832,833,292,470,744,
+    854,729,818,248,175,531,534,663,666,654,388], "Europe"),
+  // ASIE
+  ..._mk2([4,31,48,50,51,64,96,104,116,144,156,158,268,270,275,356,360,364,
+    368,376,392,398,400,408,410,414,417,418,422,446,458,462,496,512,524,
+    566,586,608,626,634,682,702,703,704,760,762,764,784,792,860,887,792,
+    50,51,4,268,356,398,417,762,104,704], "Asie"),
+  // AFRIQUE
+  ..._mk2([12,24,72,108,120,132,140,148,174,175,178,180,204,226,231,232,
+    266,270,288,324,384,404,426,430,434,450,454,466,478,504,508,516,562,
+    566,624,638,646,678,686,694,706,710,716,728,732,748,768,788,800,818,
+    834,854,894,818,270,562,624,232,231,140,108,646,638,706,690,174,175,
+    86,736,204,226,288,384,430,466,504,566,624,768,800,834,894], "Afrique"),
+  // AMÉRIQUE DU NORD
+  ..._mk2([28,44,52,60,84,124,136,188,192,212,214,218,222,304,308,312,316,
+    320,332,340,388,474,484,500,533,534,535,558,591,659,660,662,663,666,
+    670,780,796,840,850,388,332,214,308,660,474,796,500,136,218,533,535],
+    "Amérique du Nord"),
+  // AMÉRIQUE DU SUD
+  ..._mk2([32,68,76,152,170,218,254,328,600,604,740,858,862,76,32,152,600,
+    604,862,740,68,328,254,170,218,858], "Amérique du Sud"),
+  // OCÉANIE
+  ..._mk2([36,90,184,242,258,296,316,520,540,548,554,570,574,580,583,585,
+    598,612,882,876,772,776,798,570,296,316,520,772,580,798,876,36,90,
+    184,242,258,296,316,520,540,548,554,574,583,585,598,612,882,876],
+    "Océanie"),
+};
+
+function geoRingToSVG(ring,W,H,open=false){
+  const latTop=83,latRange=166;
+  let d="";
+  for(let i=0;i<ring.length;i++){
+    const x=((ring[i][0]+180)/360)*W;
+    const y=((latTop-ring[i][1])/latRange)*H;
+    d+=(i===0?"M":"L")+x.toFixed(1)+","+y.toFixed(1)+" ";
+  }
+  return open?d:d+"Z";
+}
+function geomToSVG(geom,W,H){
+  if(!geom)return"";
+  if(geom.type==="Polygon")return geom.coordinates.map(r=>geoRingToSVG(r,W,H)).join(" ");
+  if(geom.type==="MultiPolygon")return geom.coordinates.flatMap(p=>p.map(r=>geoRingToSVG(r,W,H))).join(" ");
+  if(geom.type==="MultiLineString")return geom.coordinates.map(l=>geoRingToSVG(l,W,H,true)).join(" ");
+  if(geom.type==="LineString")return geoRingToSVG(geom.coordinates,W,H,true);
+  return"";
+}
+
+// ── MAP VIEW ──
 function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lang,darkMode}){
   const[hovered,setHovered]=useState(null);
   const[selected,setSelected]=useState(null);
   const[mapCont,setMapCont]=useState("Tous");
+  const[geodata,setGeodata]=useState(null);
+  const[zoom,setZoom]=useState(1);
+  const[pan,setPan]=useState({x:0,y:0});
+  const[dragging,setDragging]=useState(false);
+  const[dragStart,setDragStart]=useState(null);
   const svgRef=useRef(null);
-  const W=800,H=400;
+  const W=900,H=460;
+
+  // Load TopoJSON countries-50m (high precision, real outlines)
+  useEffect(()=>{
+    const loadScript=(src)=>new Promise((res,rej)=>{
+      if(document.querySelector(`script[src="${src}"]`)){res();return;}
+      const s=document.createElement("script");
+      s.src=src;s.onload=res;s.onerror=rej;
+      document.head.appendChild(s);
+    });
+    loadScript("https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js")
+      .then(()=>fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json"))
+      .then(r=>r.json())
+      .then(topo=>{
+        const features=window.topojson.feature(topo,topo.objects.countries).features;
+        const borders=window.topojson.mesh(topo,topo.objects.countries,(a,b)=>a!==b);
+        setGeodata({features,borders});
+      })
+      .catch(console.error);
+  },[]);
 
   const visibleCities=useMemo(()=>
     CITIES.filter(c=>(mapCont==="Tous"||c.continent===mapCont)&&parseCoords(c.coords))
@@ -3316,24 +3394,98 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
   const cityPoints=useMemo(()=>
     visibleCities.map(city=>{
       const{lat,lng}=parseCoords(city.coords);
-      const x=mercatorX(lng,W);
-      const y=mercatorY(lat,H);
+      const latTop=83,latRange=166;
+      const x=((lng+180)/360)*W;
+      const y=((latTop-lat)/latRange)*H;
       return{city,x,y};
     })
   ,[visibleCities]);
 
   const info=selected||hovered;
 
+  // Zoom with mouse wheel
+  const handleWheel=useCallback((e)=>{
+    e.preventDefault();
+    const factor=e.deltaY<0?1.2:1/1.2;
+    const newZoom=Math.min(12,Math.max(1,zoom*factor));
+    // Zoom toward cursor position
+    const rect=svgRef.current?.getBoundingClientRect();
+    if(rect){
+      const cx=(e.clientX-rect.left)/rect.width*W;
+      const cy=(e.clientY-rect.top)/rect.height*H;
+      const svgX=(cx-pan.x)/zoom;
+      const svgY=(cy-pan.y)/zoom;
+      const newPanX=cx-svgX*newZoom;
+      const newPanY=cy-svgY*newZoom;
+      const maxPanX=0,minPanX=W*(1-newZoom);
+      const maxPanY=0,minPanY=H*(1-newZoom);
+      setPan({
+        x:Math.min(maxPanX,Math.max(minPanX,newPanX)),
+        y:Math.min(maxPanY,Math.max(minPanY,newPanY))
+      });
+    }
+    setZoom(newZoom);
+  },[zoom,pan]);
+
+  useEffect(()=>{
+    const el=svgRef.current;
+    if(!el)return;
+    el.addEventListener("wheel",handleWheel,{passive:false});
+    return()=>el.removeEventListener("wheel",handleWheel);
+  },[handleWheel]);
+
+  const handleMouseDown=useCallback((e)=>{
+    if(e.button!==0)return;
+    setDragging(true);
+    setDragStart({x:e.clientX-pan.x,y:e.clientY-pan.y});
+  },[pan]);
+
+  const handleMouseMove=useCallback((e)=>{
+    if(!dragging||!dragStart)return;
+    const newPanX=e.clientX-dragStart.x;
+    const newPanY=e.clientY-dragStart.y;
+    const maxPanX=0,minPanX=W*(1-zoom);
+    const maxPanY=0,minPanY=H*(1-zoom);
+    setPan({
+      x:Math.min(maxPanX,Math.max(minPanX,newPanX)),
+      y:Math.min(maxPanY,Math.max(minPanY,newPanY))
+    });
+  },[dragging,dragStart,zoom]);
+
+  const handleMouseUp=useCallback(()=>{
+    setDragging(false);
+    setDragStart(null);
+  },[]);
+
+  const resetView=()=>{setZoom(1);setPan({x:0,y:0});};
+
+  // Focus on a continent
+  const focusContinent=useCallback((c)=>{
+    const CONT_ZOOM={
+      "Europe":{z:3.5,px:-290,py:-60},
+      "Asie":{z:2.2,px:-620,py:-60},
+      "Amérique du Nord":{z:2.0,px:-5,py:-40},
+      "Amérique du Sud":{z:2.5,px:-100,py:-290},
+      "Afrique":{z:2.5,px:-350,py:-180},
+      "Océanie":{z:2.8,px:-990,py:-290},
+    };
+    if(c==="Tous"){resetView();return;}
+    const cfg=CONT_ZOOM[c];
+    if(cfg){setZoom(cfg.z);setPan({x:cfg.px,y:cfg.py});}
+  },[]);
+
+  const dm=darkMode;
+
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
         <div>
-          <h2 style={{margin:0,fontSize:20,fontWeight:800,color:darkMode?"#f7fafc":"#1a202c"}}>{t.mapTitle}</h2>
-          <p style={{margin:"4px 0 0",fontSize:12,color:"#718096"}}>{t.mapHint}</p>
+          <h2 style={{margin:0,fontSize:20,fontWeight:800,color:dm?"#f7fafc":"#1a202c"}}>{t.mapTitle}</h2>
+          <p style={{margin:"4px 0 0",fontSize:12,color:"#718096"}}>{t.mapHint} · Molette pour zoomer · Glisser pour naviguer</p>
         </div>
-        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+        <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
           {["Tous",...Object.keys(CONT_COLORS)].map(c=>(
-            <button key={c} onClick={()=>setMapCont(c)} style={{padding:"3px 10px",borderRadius:20,border:`1px solid ${mapCont===c?(CONT_COLORS[c]||"#FF6B35")+"70":"rgba(255,255,255,0.07)"}`,background:mapCont===c?`${CONT_COLORS[c]||"#FF6B35"}18`:"transparent",color:mapCont===c?"#f7fafc":"#718096",fontSize:10,cursor:"pointer"}}>
+            <button key={c} onClick={()=>{setMapCont(c);focusContinent(c);}} style={{padding:"3px 10px",borderRadius:20,border:`1px solid ${mapCont===c?(CONT_COLORS[c]||"#FF6B35")+"70":"rgba(255,255,255,0.07)"}`,background:mapCont===c?`${CONT_COLORS[c]||"#FF6B35"}18`:"transparent",color:mapCont===c?"#f7fafc":"#718096",fontSize:10,cursor:"pointer"}}>
               {c==="Tous"?t.allContinents:getContinent(c,lang)}
             </button>
           ))}
@@ -3342,72 +3494,143 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
 
       <div style={{display:"flex",flexDirection:isMobile?"column":"row",gap:16}}>
         {/* SVG Map */}
-        <div style={{flex:1,background:darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.04)",borderRadius:16,border:darkMode?"1px solid rgba(255,255,255,0.06)":"1px solid rgba(0,0,0,0.12)",overflow:"hidden",position:"relative"}}>
-          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} style={{width:"100%",height:"auto",display:"block",cursor:"crosshair"}}>
-            {/* Ocean background */}
-            <rect width={W} height={H} fill={darkMode?"#0d1f35":"#a8c5d8"}/>
-            {/* Continent shapes */}
-            {WORLD_PATHS.map((p,i)=>(
-              <path key={i} d={p.d} fill={darkMode?p.fill:"#b8c9b0"} stroke={darkMode?"rgba(100,160,220,0.25)":"rgba(255,255,255,0.7)"} strokeWidth={0.8}/>
-            ))}
-            {/* Grid lines */}
-            {[-60,-30,0,30,60].map(lat=>{
-              const y=mercatorY(lat,H);
-              return(<line key={lat} x1={0} y1={y} x2={W} y2={y} stroke={darkMode?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.12)"} strokeWidth={lat===0?1.5:0.5}/>);
-            })}
-            {[-150,-120,-90,-60,-30,0,30,60,90,120,150].map(lng=>{
-              const x=mercatorX(lng,W);
-              return(<line key={lng} x1={x} y1={0} x2={x} y2={H} stroke={darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.06)"} strokeWidth={0.5}/>);
-            })}
-            {/* City dots */}
-            {cityPoints.map(({city,x,y})=>{
-              const isHov=hovered?.id===city.id;
-              const isSel=selected?.id===city.id;
-              const isFav=favorites.has(city.id);
-              const color=CONT_COLORS[city.continent]||"#aaa";
-              const total=calcTotal(city,preset,activeKeys,extraCost);
-              return(
-                <g key={city.id} style={{cursor:"pointer"}} onClick={()=>setSelected(city===selected?null:city)} onMouseEnter={()=>setHovered(city)} onMouseLeave={()=>setHovered(null)}>
-                  {(isHov||isSel)&&<circle cx={x} cy={y} r={10} fill={color} opacity={0.15}/>}
-                  <circle cx={x} cy={y} r={isSel?7:isHov?6:isFav?4.5:3.5} fill={isSel?"#FFD700":color} stroke={darkMode?"rgba(0,0,0,0.5)":"rgba(255,255,255,0.8)"} strokeWidth={isSel?1.5:1} opacity={0.92}/>
-                  {isFav&&!isSel&&<text x={x} y={y-6} textAnchor="middle" fontSize={8} fill="#FFD700">★</text>}
-                  {(isHov||isSel)&&(
-                    <g>
-                      <rect x={x+8} y={y-18} width={city.name.length*6.5+calcTotal(city,preset,activeKeys,extraCost).toString().length*7+28} height={24} rx={5} fill="#1a202c" stroke={color} strokeWidth={1} opacity={0.95}/>
-                      <text x={x+14} y={y-2} fontSize={10} fill="#f7fafc" fontWeight="bold">{city.flag} {city.name}</text>
-                      <text x={x+14+city.name.length*6.5+18} y={y-2} fontSize={10} fill={color} fontWeight="bold" fontFamily="monospace">{total}€</text>
-                    </g>
-                  )}
-                </g>
-              );
-            })}
+        <div style={{flex:1,background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.04)",borderRadius:16,border:dm?"1px solid rgba(255,255,255,0.06)":"1px solid rgba(0,0,0,0.12)",overflow:"hidden",position:"relative",userSelect:"none"}}>
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${W} ${H}`}
+            style={{width:"100%",height:"auto",display:"block",cursor:dragging?"grabbing":zoom>1?"grab":"crosshair"}}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            {/* Ocean */}
+            <rect width={W} height={H} fill={dm?"#0d1f35":"#a8c5d8"}/>
+            <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
+              {/* Country fills from TopoJSON */}
+              {geodata?geodata.features.map((feat)=>{
+                const contName=ISO_CONT[+feat.id];
+                const color=contName?CONT_COLORS[contName]:"#555";
+                const isActive=contName&&(mapCont==="Tous"||mapCont===contName);
+                const d=geomToSVG(feat.geometry,W,H);
+                if(!d)return null;
+                return(
+                  <path key={feat.id} d={d}
+                    fill={color}
+                    fillOpacity={isActive?(dm?0.25:0.35):(dm?0.04:0.06)}
+                    stroke={color}
+                    strokeOpacity={isActive?(dm?0.55:0.6):0.08}
+                    strokeWidth={0.5/zoom}
+                  />
+                );
+              }):(
+                // Fallback shapes while loading
+                WORLD_PATHS.map((p,i)=>(
+                  <path key={i} d={p.d} fill={dm?p.fill:"#b8c9b0"} stroke={dm?"rgba(100,160,220,0.25)":"rgba(255,255,255,0.7)"} strokeWidth={0.8/zoom}/>
+                ))
+              )}
+              {/* Country border lines */}
+              {geodata&&(()=>{
+                const d=geomToSVG(geodata.borders,W,H);
+                return d?<path d={d} fill="none" stroke={dm?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.2)"} strokeWidth={0.35/zoom} style={{pointerEvents:"none"}}/>:null;
+              })()}
+              {/* Grid lines */}
+              {[-60,-30,0,30,60].map(lat=>{
+                const latTop=83,latRange=166;
+                const y=((latTop-lat)/latRange)*H;
+                return(<g key={lat}>
+                  <line x1={0} y1={y} x2={W} y2={y} stroke={dm?lat===0?"rgba(255,255,255,0.18)":"rgba(255,255,255,0.05)":lat===0?"rgba(0,0,0,0.18)":"rgba(0,0,0,0.07)"} strokeWidth={(lat===0?1.2:0.5)/zoom} strokeDasharray={lat===0?"4,3":"none"}/>
+                  {zoom<3&&<text x={3/zoom} y={y-2/zoom} fontSize={7/zoom} fill={dm?"rgba(255,255,255,0.25)":"rgba(0,0,0,0.3)"} fontFamily="monospace">{lat===0?"Éq.":Math.abs(lat)+"°"+(lat>0?"N":"S")}</text>}
+                </g>);
+              })}
+              {[-150,-120,-90,-60,-30,0,30,60,90,120,150].map(lng=>{
+                const x=((lng+180)/360)*W;
+                return(<line key={lng} x1={x} y1={0} x2={x} y2={H} stroke={dm?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.05)"} strokeWidth={0.5/zoom}/>);
+              })}
+              {/* City dots */}
+              {cityPoints.map(({city,x,y})=>{
+                const isHov=hovered?.id===city.id;
+                const isSel=selected?.id===city.id;
+                const isFav=favorites.has(city.id);
+                const color=CONT_COLORS[city.continent]||"#aaa";
+                const total=calcTotal(city,preset,activeKeys,extraCost);
+                const r=Math.max(1.5,4/Math.sqrt(zoom));
+                return(
+                  <g key={city.id} style={{cursor:"pointer"}}
+                    onClick={(e)=>{e.stopPropagation();if(!dragging)setSelected(s=>s?.id===city.id?null:city);}}
+                    onMouseEnter={()=>setHovered(city)}
+                    onMouseLeave={()=>setHovered(null)}
+                  >
+                    {(isHov||isSel)&&<circle cx={x} cy={y} r={r*2.5} fill={color} opacity={0.15}/>}
+                    <circle cx={x} cy={y} r={isSel?r*1.8:isHov?r*1.5:isFav?r*1.3:r}
+                      fill={isSel?"#FFD700":color}
+                      stroke={dm?"rgba(0,0,0,0.5)":"rgba(255,255,255,0.8)"}
+                      strokeWidth={(isSel?1.5:1)/zoom}
+                      opacity={0.92}
+                    />
+                    {isFav&&!isSel&&<text x={x} y={y-r*1.8} textAnchor="middle" fontSize={8/zoom} fill="#FFD700">★</text>}
+                    {(isHov||isSel)&&zoom>=1&&(()=>{
+                      const fw=city.name.length*5.5+total.toString().length*6+32;
+                      const bx=Math.min(x+6/zoom,W-fw/zoom-4/zoom);
+                      const by=y-20/zoom<2/zoom?y+4/zoom:y-20/zoom;
+                      return(
+                        <g style={{pointerEvents:"none"}}>
+                          <rect x={bx} y={by} width={fw/zoom} height={16/zoom} rx={3/zoom}
+                            fill={dm?"#0f172a":"#ffffff"} stroke={color} strokeWidth={0.8/zoom} opacity={0.97}/>
+                          <text x={bx+4/zoom} y={by+10/zoom} fontSize={9/zoom} fill={dm?"#f1f5f9":"#0f172a"} fontWeight="700">{city.flag} {city.name}</text>
+                          <text x={bx+fw/zoom-4/zoom} y={by+10/zoom} textAnchor="end" fontSize={9/zoom} fill={color} fontWeight="700" fontFamily="monospace">{total}€</text>
+                        </g>
+                      );
+                    })()}
+                  </g>
+                );
+              })}
+            </g>
           </svg>
+
+          {/* Zoom controls */}
+          <div style={{position:"absolute",top:10,right:10,display:"flex",flexDirection:"column",gap:4}}>
+            {[{l:"＋",f:()=>setZoom(z=>Math.min(12,z*1.4))},{l:"－",f:()=>setZoom(z=>Math.max(1,z/1.4))},{l:"↺",f:resetView}].map(({l,f})=>(
+              <button key={l} onClick={f} style={{width:28,height:28,borderRadius:6,border:dm?"1px solid rgba(255,255,255,0.15)":"1px solid rgba(0,0,0,0.15)",background:dm?"rgba(15,23,42,0.85)":"rgba(255,255,255,0.85)",color:dm?"#94a3b8":"#374151",fontSize:14,cursor:"pointer",fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(4px)"}}>
+                {l}
+              </button>
+            ))}
+            {zoom>1&&<div style={{fontSize:9,color:"#718096",textAlign:"center",marginTop:2}}>{Math.round(zoom*10)/10}×</div>}
+          </div>
+
           {/* Legend */}
           <div style={{position:"absolute",bottom:10,left:12,display:"flex",gap:8,flexWrap:"wrap"}}>
             {Object.entries(CONT_COLORS).map(([cont,color])=>(
               <div key={cont} style={{display:"flex",alignItems:"center",gap:4,fontSize:9,color:"#718096"}}>
                 <span style={{width:7,height:7,borderRadius:"50%",background:color,display:"inline-block"}}/>
-                {cont.split(" ")[0]}
+                {cont.replace("Amérique du ","Am.")}
               </div>
             ))}
           </div>
+
+          {/* Loading indicator */}
+          {!geodata&&(
+            <div style={{position:"absolute",top:10,left:12,fontSize:10,color:"rgba(255,255,255,0.4)",background:"rgba(0,0,0,0.4)",padding:"3px 8px",borderRadius:6,backdropFilter:"blur(4px)"}}>
+              Chargement carte HD...
+            </div>
+          )}
         </div>
 
         {/* City info panel */}
         <div style={{width:isMobile?"100%":280,flexShrink:0}}>
           {info?(
-            <div style={{background:"rgba(255,255,255,0.02)",borderRadius:14,border:`1px solid ${CONT_COLORS[info.continent]||"#FF6B35"}40`,padding:16,height:"100%"}}>
+            <div style={{background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)",borderRadius:14,border:`1px solid ${CONT_COLORS[info.continent]||"#FF6B35"}40`,padding:16,height:"100%"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
                 <span style={{fontSize:36}}>{info.flag}</span>
                 <div style={{flex:1}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontWeight:800,fontSize:16,color:darkMode?"#f7fafc":"#1a202c"}}>{info.name}</span>
+                    <span style={{fontWeight:800,fontSize:16,color:dm?"#f7fafc":"#1a202c"}}>{info.name}</span>
                     <button onClick={()=>toggleFav(info.id)} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:favorites.has(info.id)?"#FFD700":"#4a5568",transition:"all 0.2s"}}>{favorites.has(info.id)?"★":"☆"}</button>
                   </div>
                   <div style={{fontSize:11,color:CONT_COLORS[info.continent]||"#718096"}}>{getCountry(info,lang)} · {getContinent(info.continent,lang)}</div>
                 </div>
               </div>
-              <div style={{background:"rgba(255,255,255,0.04)",borderRadius:10,padding:"10px 14px",marginBottom:12}}>
+              <div style={{background:dm?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.04)",borderRadius:10,padding:"10px 14px",marginBottom:12}}>
                 <div style={{fontSize:10,color:"#718096",marginBottom:4,fontFamily:"'Space Mono',monospace"}}>COÛT MENSUEL ({preset.toUpperCase()})</div>
                 <div style={{fontSize:28,fontWeight:800,color:CONT_COLORS[info.continent]||"#FF6B35",fontFamily:"'Space Mono',monospace"}}>{calcTotal(info,preset,activeKeys,extraCost)} €</div>
               </div>
@@ -3417,21 +3640,21 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
                   return(
                     <div key={c.key} style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11}}>
                       <span style={{color:"#a0aec0"}}>{getCatLabel(c,t)}</span>
-                      <span style={{color:"#e2e8f0",fontFamily:"'Space Mono',monospace",fontSize:12}}>{adj[c.key]} €</span>
+                      <span style={{color:dm?"#e2e8f0":"#1a202c",fontFamily:"'Space Mono',monospace",fontSize:12}}>{adj[c.key]} €</span>
                     </div>
                   );
                 })}
               </div>
               <div style={{marginTop:12,padding:"10px 12px",background:"rgba(255,107,53,0.07)",borderRadius:9,border:"1px solid rgba(255,107,53,0.15)"}}>
                 <div style={{fontSize:10,color:"#FF6B35",marginBottom:4,fontFamily:"'Space Mono',monospace"}}>💡</div>
-                <p style={{margin:0,fontSize:11,color:"#a0aec0",lineHeight:1.55}}>{getFact(info,lang).substring(0,160)}...</p>
+                <p style={{margin:0,fontSize:11,color:dm?"#a0aec0":"#4a5568",lineHeight:1.55}}>{getFact(info,lang).substring(0,160)}...</p>
               </div>
             </div>
           ):(
-            <div style={{background:darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.03)",borderRadius:14,border:darkMode?"1px solid rgba(255,255,255,0.05)":"1px solid rgba(0,0,0,0.1)",padding:20,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",minHeight:200,gap:12,color:"#4a5568",textAlign:"center"}}>
+            <div style={{background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.03)",borderRadius:14,border:dm?"1px solid rgba(255,255,255,0.05)":"1px solid rgba(0,0,0,0.1)",padding:20,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",minHeight:200,gap:12,color:"#4a5568",textAlign:"center"}}>
               <div style={{fontSize:40}}>🗺️</div>
-              <div style={{fontSize:13}}>Passe la souris ou clique sur une ville</div>
-              <div style={{fontSize:11}}>{cityPoints.length} villes affichées</div>
+              <div style={{fontSize:13,color:dm?"#718096":"#4a5568"}}>Passe la souris ou clique sur une ville</div>
+              <div style={{fontSize:11,color:"#4a5568"}}>{cityPoints.length} villes · zoom {Math.round(zoom*10)/10}×</div>
             </div>
           )}
         </div>

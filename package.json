@@ -1,6 +1,6 @@
 {
-  "name": "erasmus-globe-trotter",
-  "version": "1.0.0",
+  "name": "student-globe-trotter",
+  "version": "2.0.0",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",

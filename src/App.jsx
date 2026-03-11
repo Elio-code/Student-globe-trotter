@@ -1115,7 +1115,6 @@ const BASE_CITIES = [
   { id:394, name:"Chisinau", country:"Moldavie", flag:"🇲🇩", continent:"Europe", coords:"47.0105°N, 28.8638°E", funFact:"Chisinau est la capitale la moins chère d'Europe. La Moldavie produit certains des meilleurs vins du monde dans ses caves Mileștii Mici — 200 km de galeries souterraines.", costs:{logement:280,courses:52,restos:35,nocturne:28,transport:8,sante:15,telecom:7,voyage:100}, safety:60, english:2 },
   { id:395, name:"Samarcande", country:"Ouzbékistan", flag:"🇺🇿", continent:"Asie", coords:"39.6542°N, 66.9597°E", funFact:"Samarcande est l'une des plus anciennes villes du monde. La place du Régistan avec ses 3 madrasas couvertes de faïences bleues est parmi les ensembles architecturaux les plus beaux du monde.", costs:{logement:200,courses:42,restos:28,nocturne:20,transport:5,sante:12,telecom:5,voyage:145}, safety:65, english:1 },
   { id:396, name:"Muscat", country:"Oman", flag:"🇴🇲", continent:"Asie", coords:"23.5859°N, 58.4059°E", funFact:"Muscat est l'une des capitales les plus propres et sûres du Moyen-Orient. L'Oman est le pays le plus ouvert et tolérant de la péninsule arabique.", costs:{logement:700,courses:115,restos:82,nocturne:55,transport:35,sante:42,telecom:18,voyage:240}, safety:82, english:3 },
-];,
 ];
 
 const CONTINENTS = ["Tous","Europe","Asie","Amérique du Nord","Amérique du Sud","Afrique","Océanie"];

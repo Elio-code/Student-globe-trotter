@@ -3057,17 +3057,17 @@ function CategoryPanel({activeKeys,setActiveKeys,extraCost,setExtraCost,extraLab
   const toggle=key=>setActiveKeys(prev=>prev.includes(key)?prev.filter(k=>k!==key):[...prev,key]);
   const allOn=activeKeys.length===ALL_CAT_KEYS.length;
   return(
-    <div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"14px 16px",border:"1px solid rgba(255,255,255,0.07)"}}>
+    <div style={{background:{$darkMode?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)"},borderRadius:12,padding:"14px 16px",border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
         <span style={{fontSize:10,color:"#718096",fontFamily:"'Space Mono',monospace",letterSpacing:1}}>{t.activeCats}</span>
-        <button onClick={()=>setActiveKeys(allOn?[]:ALL_CAT_KEYS)} style={{fontSize:10,padding:"2px 8px",borderRadius:6,border:"1px solid rgba(255,255,255,0.1)",background:"transparent",color:"#718096",cursor:"pointer"}}>{allOn?t.uncheckAll:t.checkAll}</button>
+        <button onClick={()=>setActiveKeys(allOn?[]:ALL_CAT_KEYS)} style={{fontSize:10,padding:"2px 8px",borderRadius:6,border:`1px solid ${dm?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.15)"}`,background:"transparent",color:"#718096",cursor:"pointer"}}>{allOn?t.uncheckAll:t.checkAll}</button>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px 12px"}}>
         {CATEGORIES.map(c=>{
           const on=activeKeys.includes(c.key);
           return(
             <label key={c.key} onClick={()=>toggle(c.key)} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",padding:"4px 6px",borderRadius:7,background:on?`${c.color}15`:"transparent",border:`1px solid ${on?c.color+"40":darkMode?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.1)"}`,transition:"all 0.15s"}}>
-              <div style={{width:16,height:16,borderRadius:4,border:`2px solid ${on?c.color:"rgba(255,255,255,0.2)"}`,background:on?c.color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <div style={{width:16,height:16,borderRadius:4,border:`2px solid ${on?c.color:`${dm?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.2)"}`}`,background:on?c.color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                 {on&&<span style={{color:"#0d1117",fontSize:10,fontWeight:700}}>✓</span>}
               </div>
               <span style={{fontSize:12,color:on?"#f7fafc":"#718096",userSelect:"none"}}>{getCatLabel(c,t)}</span>
@@ -3075,12 +3075,12 @@ function CategoryPanel({activeKeys,setActiveKeys,extraCost,setExtraCost,extraLab
           );
         })}
       </div>
-      <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid rgba(255,255,255,0.06)"}}>
+      <div style={{marginTop:12,paddingTop:12,borderTop:`1px solid ${darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`}}>
         <div style={{fontSize:10,color:"#718096",fontFamily:"'Space Mono',monospace",marginBottom:8,letterSpacing:1}}>{t.otherCosts}</div>
         <div style={{display:"flex",gap:8}}>
           <input value={extraLabel} onChange={e=>setExtraLabel(e.target.value)} placeholder={t.otherPlaceholder} style={{flex:2,padding:"7px 10px",background:dm?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.04)",border:dm?"1px solid rgba(255,255,255,0.1)":"1px solid rgba(0,0,0,0.12)",borderRadius:8,color:dm?"#f7fafc":"#1a202c",fontSize:12,outline:"none"}}/>
           <div style={{position:"relative",flex:1}}>
-            <input type="number" min="0" value={extraCost||""} onChange={e=>setExtraCost(Math.max(0,parseInt(e.target.value)||0))} placeholder="0" style={{width:"100%",padding:"7px 28px 7px 10px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,color:"#FFD700",fontSize:13,fontWeight:700,outline:"none",fontFamily:"'Space Mono',monospace"}}/>
+            <input type="number" min="0" value={extraCost||""} onChange={e=>setExtraCost(Math.max(0,parseInt(e.target.value)||0))} placeholder="0" style={{width:"100%",padding:"7px 28px 7px 10px",background:{$darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},border:`1px solid ${darkMode?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.18)"}`,borderRadius:8,color:"#FFD700",fontSize:13,fontWeight:700,outline:"none",fontFamily:"'Space Mono',monospace"}}/>
             <span style={{position:"absolute",right:10,top:"50%",transform:"translateY(-50%)",color:"#718096",fontSize:11,pointerEvents:"none"}}>€</span>
           </div>
         </div>
@@ -3361,11 +3361,11 @@ function BudgetInput({label,val,set,color}){
   const holdUp=useHoldStep(set,1);
   const holdDn=useHoldStep(set,-1);
   return(
-    <div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"16px",border:`1px solid ${color}30`}}>
+    <div style={{background:{$darkMode?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)"},borderRadius:12,padding:"16px",border:`1px solid ${color}30`}}>
       <div style={{fontSize:11,color:"#718096",marginBottom:8}}>{label}</div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
         <input type="number" min="0" value={val} onChange={e=>set(Math.max(0,parseInt(e.target.value)||0))}
-          style={{flex:1,padding:"10px 14px",background:"rgba(255,255,255,0.06)",border:`1px solid ${color}50`,borderRadius:9,color,fontSize:20,fontWeight:800,fontFamily:"'Space Mono',monospace",outline:"none",width:"100%"}}/>
+          style={{flex:1,padding:"10px 14px",background:{$darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"},border:`1px solid ${color}50`,borderRadius:9,color,fontSize:20,fontWeight:800,fontFamily:"'Space Mono',monospace",outline:"none",width:"100%"}}/>
         <div style={{display:"flex",flexDirection:"column",gap:3}}>
           <button {...holdUp} style={{width:32,height:28,borderRadius:7,border:`1px solid ${color}40`,background:`${color}15`,color,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",userSelect:"none",lineHeight:1}}>▲</button>
           <button {...holdDn} style={{width:32,height:28,borderRadius:7,border:`1px solid ${color}40`,background:`${color}15`,color,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",userSelect:"none",lineHeight:1}}>▼</button>
@@ -3420,21 +3420,21 @@ function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="f
       <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
           {["Tous",...Object.keys(CONT_COLORS)].map(c=>(
-            <button key={c} onClick={()=>setContFilter(c)} style={{padding:"3px 10px",borderRadius:20,border:`1px solid ${contFilter===c?(CONT_COLORS[c]||"#FF6B35")+"60":"rgba(255,255,255,0.07)"}`,background:contFilter===c?"rgba(255,107,53,0.1)":"transparent",color:contFilter===c?"#f7fafc":"#718096",fontSize:10,cursor:"pointer"}}>
+            <button key={c} onClick={()=>setContFilter(c)} style={{padding:"3px 10px",borderRadius:20,border:`1px solid ${contFilter===c?(CONT_COLORS[c]||"#FF6B35")+"60":dm?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`,background:contFilter===c?"rgba(255,107,53,0.1)":"transparent",color:contFilter===c?"#f7fafc":"#718096",fontSize:10,cursor:"pointer"}}>
               {c==="Tous"?t.allContinents:getContinent(c,lang)}
             </button>
           ))}
         </div>
-        <select value={sortBudget} onChange={e=>setSortBudget(e.target.value)} style={{marginLeft:"auto",padding:"5px 10px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,color:"#a0aec0",fontSize:12,outline:"none",cursor:"pointer"}}>
+        <select value={sortBudget} onChange={e=>setSortBudget(e.target.value)} style={{marginLeft:"auto",padding:"5px 10px",background:{$dm?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},border:`1px solid ${dm?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.18)"}`,borderRadius:8,color:"#a0aec0",fontSize:12,outline:"none",cursor:"pointer"}}>
           <option value="asc">{t.sortCheap}</option>
           <option value="desc">{t.sortExpensive}</option>
         </select>
       </div>
 
       {/* Table */}
-      <div style={{background:"rgba(255,255,255,0.02)",borderRadius:14,border:"1px solid rgba(255,255,255,0.06)",overflow:"hidden"}}>
+      <div style={{background:{$dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.15)"},borderRadius:14,border:`1px solid ${dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`,overflow:"hidden"}}>
         {/* Header */}
-        <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 2fr 1fr",gap:8,padding:"10px 16px",background:"rgba(255,255,255,0.03)",borderBottom:"1px solid rgba(255,255,255,0.06)",fontSize:10,color:"#4a5568",fontFamily:"'Space Mono',monospace",letterSpacing:1}}>
+        <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 2fr 1fr",gap:8,padding:"10px 16px",background:{$dm?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)"},borderBottom:`1px solid ${dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`,fontSize:10,color:"#4a5568",fontFamily:"'Space Mono',monospace",letterSpacing:1}}>
           <span>{t.budgetTableCity}</span>
           <span style={{textAlign:"right"}}>{t.budgetTableCost}</span>
           <span style={{textAlign:"center"}}>{t.budgetTableMonths}</span>
@@ -3447,7 +3447,7 @@ function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="f
             const monthsPct=months===Infinity?100:maxMonths>0?(months/Math.max(...rows.map(r=>r.months===Infinity?0:r.months)))*100:0;
             const durationColor=months===Infinity?"#1A936F":months>=12?"#FFD700":months>=6?"#F7C59F":"#FF4D4D";
             return(
-              <div key={city.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 2fr 1fr",gap:8,padding:"10px 16px",borderBottom:"1px solid rgba(255,255,255,0.04)",alignItems:"center",transition:"background 0.15s",cursor:"default"}}
+              <div key={city.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 2fr 1fr",gap:8,padding:"10px 16px",borderBottom:`1px solid ${dm?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"}`,alignItems:"center",transition:"background 0.15s",cursor:"default"}}
                 onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}
                 onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                 {/* City */}
@@ -3461,7 +3461,7 @@ function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="f
                 {/* Cost bar */}
                 <div style={{textAlign:"right"}}>
                   <div style={{fontSize:12,fontWeight:700,color:"#FF6B35",fontFamily:"'Space Mono',monospace"}}>{cost} €</div>
-                  <div style={{height:3,background:"rgba(255,255,255,0.06)",borderRadius:99,marginTop:3}}>
+                  <div style={{height:3,background:{$dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"},borderRadius:99,marginTop:3}}>
                     <div style={{height:"100%",width:`${pct}%`,background:"#FF6B35",borderRadius:99}}/>
                   </div>
                 </div>
@@ -3472,7 +3472,7 @@ function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="f
                       {months===Infinity?t.budgetForever:`${months} ${t.budgetMonths}`}
                     </span>
                   </div>
-                  <div style={{height:6,background:"rgba(255,255,255,0.06)",borderRadius:99,marginTop:4}}>
+                  <div style={{height:6,background:{$dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"},borderRadius:99,marginTop:4}}>
                     <div style={{height:"100%",width:`${Math.min(monthsPct,100)}%`,background:`linear-gradient(90deg,${durationColor}88,${durationColor})`,borderRadius:99,transition:"width 0.4s"}}/>
                   </div>
                 </div>
@@ -3749,7 +3749,7 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
         </div>
         <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
           {["Tous",...Object.keys(CONT_COLORS)].map(c=>(
-            <button key={c} onClick={()=>{setMapCont(c);focusContinent(c);}} style={{padding:"3px 10px",borderRadius:20,border:`1px solid ${mapCont===c?(CONT_COLORS[c]||"#FF6B35")+"70":"rgba(255,255,255,0.07)"}`,background:mapCont===c?`${CONT_COLORS[c]||"#FF6B35"}18`:"transparent",color:mapCont===c?"#f7fafc":"#718096",fontSize:10,cursor:"pointer"}}>
+            <button key={c} onClick={()=>{setMapCont(c);focusContinent(c);}} style={{padding:"3px 10px",borderRadius:20,border:`1px solid ${mapCont===c?(CONT_COLORS[c]||"#FF6B35")+"70":dm?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`,background:mapCont===c?`${CONT_COLORS[c]||"#FF6B35"}18`:"transparent",color:mapCont===c?"#f7fafc":"#718096",fontSize:10,cursor:"pointer"}}>
               {c==="Tous"?t.allContinents:getContinent(c,lang)}
             </button>
           ))}
@@ -3793,18 +3793,18 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
         </div>
 
         {/* Price filter */}
-        <button onClick={()=>setPriceActive(p=>!p)} style={{padding:"7px 11px",fontSize:11,fontWeight:600,...bStyle({border:`1px solid ${priceActive?"#FF6B35":"rgba(255,255,255,0.12)"}`,color:priceActive?"#FF6B35":dm?"#94a3b8":"#374151"})}}>
+        <button onClick={()=>setPriceActive(p=>!p)} style={{padding:"7px 11px",fontSize:11,fontWeight:600,...bStyle({border:`1px solid ${priceActive?"#FF6B35":dm?"rgba(255,255,255,0.12)":"rgba(0,0,0,0.18)"}`,color:priceActive?"#FF6B35":dm?"#94a3b8":"#374151"})}}>
           💰{priceActive?` ${priceMin}–${priceMax}€`:" Prix"}
         </button>
 
         {/* Tag filter */}
-        <button onClick={()=>setShowTagPanel(p=>!p)} style={{padding:"7px 11px",fontSize:11,fontWeight:600,...bStyle({border:`1px solid ${activeTags.length>0?"#a78bfa":"rgba(255,255,255,0.12)"}`,color:activeTags.length>0?"#a78bfa":dm?"#94a3b8":"#374151"})}}>
+        <button onClick={()=>setShowTagPanel(p=>!p)} style={{padding:"7px 11px",fontSize:11,fontWeight:600,...bStyle({border:`1px solid ${activeTags.length>0?"#a78bfa":dm?"rgba(255,255,255,0.12)":"rgba(0,0,0,0.18)"}`,color:activeTags.length>0?"#a78bfa":dm?"#94a3b8":"#374151"})}}>
           🏷️{activeTags.length>0?` ${activeTags.length} tag${activeTags.length>1?"s":""}`:` Tags`}
         </button>
 
 
         {/* Itinerary */}
-        <button onClick={()=>{setItinMode(m=>!m);if(itinMode){setItinCities([]);setItinPanel(false);}}} style={{padding:"7px 11px",fontSize:11,fontWeight:600,...bStyle({border:`1px solid ${itinMode?"#a78bfa":"rgba(255,255,255,0.12)"}`,color:itinMode?"#a78bfa":dm?"#94a3b8":"#374151"})}}>
+        <button onClick={()=>{setItinMode(m=>!m);if(itinMode){setItinCities([]);setItinPanel(false);}}} style={{padding:"7px 11px",fontSize:11,fontWeight:600,...bStyle({border:`1px solid ${itinMode?"#a78bfa":dm?"rgba(255,255,255,0.12)":"rgba(0,0,0,0.18)"}`,color:itinMode?"#a78bfa":dm?"#94a3b8":"#374151"})}}>
           ✈️{itinMode?` (${itinCities.length})`:" Itinéraire"}
         </button>
         {itinMode&&itinCities.length>=2&&(
@@ -3840,7 +3840,7 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
             const active=activeTags.includes(tag);
             return(
               <button key={tag} onClick={()=>setActiveTags(prev=>active?prev.filter(t=>t!==tag):[...prev,tag])}
-                style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${active?"#a78bfa":"rgba(255,255,255,0.1)"}`,background:active?"rgba(167,139,250,0.15)":"transparent",color:active?"#c4b5fd":dm?"#94a3b8":"#374151",fontSize:11,cursor:"pointer",fontWeight:active?700:400}}>
+                style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${active?"#a78bfa":`${dm?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.15)"}`}`,background:active?"rgba(167,139,250,0.15)":"transparent",color:active?"#c4b5fd":dm?"#94a3b8":"#374151",fontSize:11,cursor:"pointer",fontWeight:active?700:400}}>
                 {TAG_ICONS[tag]} {tag}
               </button>
             );
@@ -3849,23 +3849,97 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
         </div>
       )}
 
-            {zoom>1&&<div style={{fontSize:9,color:"#718096",textAlign:"center"}}>{Math.round(zoom*10)/10}×</div>}
-          </div>
 
-          {/* Minimap (shows when zoomed in) */}
-          {zoom>1.8&&<MiniMap pan={pan} zoom={zoom} W={W} H={H} dm={dm}/>}
+      {/* ── SVG MAP ── */}
+      <div ref={containerRef} style={{flex:1,background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.04)",borderRadius:16,border:dm?"1px solid rgba(255,255,255,0.06)":"1px solid rgba(0,0,0,0.12)",overflow:"hidden",position:"relative",userSelect:"none",touchAction:"none"}}>
+        <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
+          style={{width:"100%",height:"auto",display:"block",cursor:dragging?"grabbing":zoom>1?"grab":"crosshair"}}
+          onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
+        >
+          <rect width={W} height={H} fill={dm?"#0d1f35":"#a8c5d8"}/>
+          <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
+            {geodata?geodata.features.map(feat=>{
+              const cn=ISO_CONT[+feat.id];const color=cn?CONT_COLORS[cn]:"#555";const isAct=cn&&(mapCont==="Tous"||mapCont===cn);
+              const d=geomToSVG(feat.geometry,W,H);if(!d)return null;
+              return<path key={feat.id} d={d} fill={color} fillOpacity={isAct?(dm?0.28:0.38):(dm?0.04:0.06)} stroke={color} strokeOpacity={isAct?(dm?0.55:0.6):0.08} strokeWidth={0.5/zoom}/>;
+            }):WORLD_PATHS.map((p,i)=><path key={i} d={p.d} fill={dm?p.fill:"#b8c9b0"} stroke={dm?"rgba(100,160,220,0.25)":"rgba(255,255,255,0.7)"} strokeWidth={0.8/zoom}/>)}
+            {geodata&&(()=>{const d=geomToSVG(geodata.borders,W,H);return d?<path d={d} fill="none" stroke={dm?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.2)"} strokeWidth={0.35/zoom} style={{pointerEvents:"none"}}/>:null;})()}
+            {[-60,-30,0,30,60].map(lat=>{const y=((83-lat)/166)*H;return<g key={lat}><line x1={0} y1={y} x2={W} y2={y} stroke={dm?lat===0?"rgba(255,255,255,0.18)":"rgba(255,255,255,0.05)":lat===0?"rgba(0,0,0,0.18)":"rgba(0,0,0,0.07)"} strokeWidth={(lat===0?1.2:0.5)/zoom} strokeDasharray={lat===0?"4,3":"none"}/>{zoom<3&&<text x={3/zoom} y={y-2/zoom} fontSize={7/zoom} fill={dm?"rgba(255,255,255,0.25)":"rgba(0,0,0,0.3)"} fontFamily="monospace">{lat===0?"Éq.":Math.abs(lat)+"°"+(lat>0?"N":"S")}</text>}</g>;})}
+            {[-150,-120,-90,-60,-30,0,30,60,90,120,150].map(lng=><line key={lng} x1={((lng+180)/360)*W} y1={0} x2={((lng+180)/360)*W} y2={H} stroke={dm?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.05)"} strokeWidth={0.5/zoom}/>)}
+            {itinMode&&itinRoute.length>=2&&itinRoute.map((city,i)=>{
+              if(i===0)return null;
+              const a=cityToXY(itinRoute[i-1],W,H),b=cityToXY(city,W,H);if(!a||!b)return null;
+              const d=haversine(itinRoute[i-1],city);
+              return(
+                <g key={`ln${i}`} style={{pointerEvents:"none"}}>
+                  <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="#a78bfa" strokeWidth={2/zoom} strokeDasharray={`${7/zoom},${3/zoom}`} opacity={0.75}/>
+                  <text x={(a.x+b.x)/2} y={(a.y+b.y)/2-5/zoom} textAnchor="middle" fontSize={6.5/zoom} fill="#c4b5fd" fontFamily="monospace" fontWeight="700">{d<1000?d+"km":(d/1000).toFixed(1)+"k"}</text>
+                </g>
+              );
+            })}
+            {cityPoints.map(({city,x,y})=>{
+              const isHov=hovered?.id===city.id,isSel=selected?.id===city.id,isFav=favorites.has(city.id);
+              const inItin=itinCities.some(c=>c.id===city.id);const itinIdx=itinRoute.findIndex(c=>c.id===city.id);
+              const color=CONT_COLORS[city.continent]||"#aaa";const total=calcTotal(city,preset,activeKeys,extraCost);
+              const r=Math.max(1.5,4/Math.sqrt(zoom));
+              const dc=inItin?"#a78bfa":isSel?"#FFD700":color;
+              const dr=inItin?r*2.2:isSel?r*1.9:isHov?r*1.6:isFav?r*1.3:r;
+              return(
+                <g key={city.id} style={{cursor:"pointer"}} onClick={e=>handleCityClick(city,e)} onMouseEnter={()=>setHovered(city)} onMouseLeave={()=>setHovered(null)}>
+                  {(isHov||isSel||inItin)&&<circle cx={x} cy={y} r={dr*2.2} fill={dc} opacity={0.12}/>}
+                  <circle cx={x} cy={y} r={dr} fill={dc} stroke={dm?"rgba(0,0,0,0.5)":"rgba(255,255,255,0.8)"} strokeWidth={(isSel||inItin?1.5:1)/zoom} opacity={0.95}/>
+                  {inItin&&itinIdx>=0&&zoom>=2&&<text x={x} y={y+3.5/zoom} textAnchor="middle" fontSize={7/zoom} fill="#fff" fontWeight="800">{itinIdx+1}</text>}
+                  {isFav&&!isSel&&!inItin&&<text x={x} y={y-dr*1.9} textAnchor="middle" fontSize={8/zoom} fill="#FFD700">★</text>}
+                  {(isHov||isSel)&&!itinMode&&zoom>=1&&(()=>{
+                    const fw=city.name.length*5.5+total.toString().length*6+32;
+                    const bx=Math.min(x+6/zoom,W-fw/zoom-4/zoom);const by=y-20/zoom<2/zoom?y+4/zoom:y-20/zoom;
+                    return(
+                      <g style={{pointerEvents:"none"}}>
+                        <rect x={bx} y={by} width={fw/zoom} height={16/zoom} rx={3/zoom} fill={dm?"#0f172a":"#fff"} stroke={color} strokeWidth={0.8/zoom} opacity={0.97}/>
+                        <text x={bx+4/zoom} y={by+10/zoom} fontSize={9/zoom} fill={dm?"#f1f5f9":"#0f172a"} fontWeight="700">{city.flag} {city.name}</text>
+                        <text x={bx+fw/zoom-4/zoom} y={by+10/zoom} textAnchor="end" fontSize={9/zoom} fill={color} fontWeight="700" fontFamily="monospace">{total}€</text>
+                      </g>
+                    );
+                  })()}
+                  {isHov&&itinMode&&zoom>=1&&(()=>{
+                    const fw=city.name.length*5.5+42;const bx=Math.min(x+6/zoom,W-fw/zoom-4/zoom);const by=y-20/zoom<2/zoom?y+4/zoom:y-20/zoom;
+                    return(
+                      <g style={{pointerEvents:"none"}}>
+                        <rect x={bx} y={by} width={fw/zoom} height={14/zoom} rx={3/zoom} fill={dm?"#0f172a":"#fff"} stroke="#a78bfa" strokeWidth={0.8/zoom} opacity={0.97}/>
+                        <text x={bx+4/zoom} y={by+9/zoom} fontSize={8/zoom} fill="#c4b5fd" fontWeight="700">{inItin?"✕ Retirer":"＋ Ajouter"} {city.flag} {city.name}</text>
+                      </g>
+                    );
+                  })()}
+                </g>
+              );
+            })}
+          </g>
+        </svg>
 
-          {/* Legend */}
-          <div style={{position:"absolute",bottom:10,left:12,display:"flex",gap:6,flexWrap:"wrap"}}>
-            {Object.entries(CONT_COLORS).map(([cont,color])=>(
-              <div key={cont} style={{display:"flex",alignItems:"center",gap:3,fontSize:9,color:"#718096"}}>
-                <span style={{width:6,height:6,borderRadius:"50%",background:color,display:"inline-block"}}/>
-                {cont.replace("Amérique du ","Am.")}
-              </div>
-            ))}
-          </div>
-          {!geodata&&<div style={{position:"absolute",top:10,left:12,fontSize:10,color:"rgba(255,255,255,0.4)",background:"rgba(0,0,0,0.4)",padding:"3px 8px",borderRadius:6}}>Chargement carte HD…</div>}
+        {/* Zoom controls */}
+        <div style={{position:"absolute",top:10,right:10,display:"flex",flexDirection:"column",gap:4}}>
+          {[{l:"＋",f:()=>setZoom(z=>{const nz=Math.min(12,z*1.4);setPan(p=>clampPan(p.x,p.y,nz));return nz;})},{l:"－",f:()=>setZoom(z=>{const nz=Math.max(1,z/1.4);setPan(p=>clampPan(p.x,p.y,nz));return nz;})},{l:"↺",f:resetView}].map(({l,f})=>(
+            <button key={l} onClick={f} style={{width:28,height:28,...bStyle({display:"flex",alignItems:"center",justifyContent:"center",fontSize:l==="↺"?13:16,fontWeight:700,padding:0})}}>
+              {l}
+            </button>
+          ))}
+          {zoom>1&&<div style={{fontSize:9,color:"#718096",textAlign:"center"}}>{Math.round(zoom*10)/10}×</div>}
         </div>
+
+        {/* Minimap */}
+        {zoom>1.8&&<MiniMap pan={pan} zoom={zoom} W={W} H={H} dm={dm}/>}
+
+        {/* Legend */}
+        <div style={{position:"absolute",bottom:10,left:12,display:"flex",gap:6,flexWrap:"wrap"}}>
+          {Object.entries(CONT_COLORS).map(([cont,color])=>(
+            <div key={cont} style={{display:"flex",alignItems:"center",gap:3,fontSize:9,color:"#718096"}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:color,display:"inline-block"}}/>
+              {cont.replace("Amérique du ","Am.")}
+            </div>
+          ))}
+        </div>
+        {!geodata&&<div style={{position:"absolute",top:10,left:12,fontSize:10,color:{$dm?"rgba(255,255,255,0.4)":"rgba(0,0,0,0.18)"},background:"rgba(0,0,0,0.4)",padding:"3px 8px",borderRadius:6}}>Chargement carte HD…</div>}
+      </div>
 
         {/* ── RIGHT PANEL ── */}
         <div style={{width:isMobile?"100%":290,flexShrink:0,display:"flex",flexDirection:"column",gap:10}}>
@@ -4054,26 +4128,26 @@ export default function App(){
               {/* Dark/Light mode toggle */}
               <button onClick={()=>setDarkMode(!darkMode)} style={{padding:"4px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.08)",color:darkMode?"#FFD700":"#FF6B35",cursor:"pointer",fontSize:16,transition:"all 0.2s",lineHeight:1}}>{darkMode?"☀️":"🌙"}</button>
               {/* Language switcher */}
-              <div style={{display:"flex",gap:2,background:"rgba(255,255,255,0.04)",padding:2,borderRadius:8,border:"1px solid rgba(255,255,255,0.07)"}}>
+              <div style={{display:"flex",gap:2,background:{$darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},padding:2,borderRadius:8,border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}}>
                 {[{code:"fr",flag:"🇫🇷"},{code:"en",flag:"🇬🇧"},{code:"es",flag:"🇪🇸"}].map(({code,flag})=>(
                   <button key={code} onClick={()=>setLang(code)} style={{padding:"4px 8px",borderRadius:6,border:"none",cursor:"pointer",background:lang===code?"rgba(255,107,53,0.25)":"transparent",fontSize:14,transition:"all 0.2s",opacity:lang===code?1:0.5}}>{flag}</button>
                 ))}
               </div>
               {/* Presets */}
-              <div style={{display:"flex",gap:2,background:"rgba(255,255,255,0.04)",padding:2,borderRadius:8,border:"1px solid rgba(255,255,255,0.07)"}}>
+              <div style={{display:"flex",gap:2,background:{$darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},padding:2,borderRadius:8,border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}}>
                 {Object.entries(PRESETS).map(([key,p])=>(
                   <button key={key} onClick={()=>setPreset(key)} style={{padding:isMobile?"4px 7px":"5px 10px",borderRadius:6,border:"none",cursor:"pointer",background:preset===key?p.color:"transparent",color:preset===key?"#0d1117":"#718096",fontWeight:preset===key?700:400,fontSize:isMobile?10:11,transition:"all 0.2s"}}>{p.label}</button>
                 ))}
               </div>
               {/* Battle */}
-              <button onClick={()=>{setBattleMode(!battleMode);setActiveTab("cities");}} style={{padding:isMobile?"5px 9px":"5px 12px",borderRadius:7,border:`1px solid ${battleMode?"rgba(255,107,53,0.5)":"rgba(255,255,255,0.1)"}`,background:battleMode?"rgba(255,107,53,0.15)":"transparent",color:battleMode?"#FF6B35":"#718096",cursor:"pointer",fontSize:isMobile?10:11,fontWeight:600,transition:"all 0.2s"}}>
+              <button onClick={()=>{setBattleMode(!battleMode);setActiveTab("cities");}} style={{padding:isMobile?"5px 9px":"5px 12px",borderRadius:7,border:`1px solid ${battleMode?"rgba(255,107,53,0.5)":`${darkMode?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.15)"}`}`,background:battleMode?"rgba(255,107,53,0.15)":"transparent",color:battleMode?"#FF6B35":"#718096",cursor:"pointer",fontSize:isMobile?10:11,fontWeight:600,transition:"all 0.2s"}}>
                 {battleMode?t.battleQuit:t.battleBtn}
               </button>
             </div>
           </div>
 
           {/* Tabs */}
-          <div style={{display:"flex",gap:2,marginTop:10,background:"rgba(255,255,255,0.03)",borderRadius:10,padding:3,border:"1px solid rgba(255,255,255,0.06)",width:"fit-content"}}>
+          <div style={{display:"flex",gap:2,marginTop:10,background:{$darkMode?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.15)"},borderRadius:10,padding:3,border:`1px solid ${darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`,width:"fit-content"}}>
             {TABS.map(tab=>(
               <button key={tab.id} onClick={()=>{setActiveTab(tab.id);setBattleMode(false);}} style={{padding:"6px 14px",borderRadius:7,border:"none",cursor:"pointer",background:activeTab===tab.id?"rgba(255,107,53,0.2)":"transparent",color:activeTab===tab.id?"#FF6B35":darkMode?"#718096":"#4a5568",fontWeight:activeTab===tab.id?700:400,fontSize:isMobile?11:12,transition:"all 0.2s",whiteSpace:"nowrap"}}>{tab.label}</button>
             ))}
@@ -4092,16 +4166,16 @@ export default function App(){
               const isActive=activeSlot===i;
               return(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:0}}>
-                  <button onClick={()=>setActiveSlot(i)} style={{padding:"4px 10px",borderRadius:"6px 0 0 6px",border:`1px solid ${isActive?color+"80":"rgba(255,255,255,0.08)"}`,borderRight:"none",background:isActive?color+"20":"rgba(255,255,255,0.03)",color:isActive?color:"#718096",cursor:"pointer",fontSize:11,fontWeight:isActive?700:400,transition:"all 0.15s"}}>
+                  <button onClick={()=>setActiveSlot(i)} style={{padding:"4px 10px",borderRadius:"6px 0 0 6px",border:`1px solid ${isActive?color+"80":`${darkMode?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.15)"}`}`,borderRight:"none",background:isActive?color+"20":"rgba(255,255,255,0.03)",color:isActive?color:"#718096",cursor:"pointer",fontSize:11,fontWeight:isActive?700:400,transition:"all 0.15s"}}>
                     {city.flag} {city.name}
                     {isActive&&<span style={{marginLeft:5,fontSize:9,opacity:0.7}}>← cliquer une ville</span>}
                   </button>
-                  <button onClick={()=>{const s=battleSlots.filter((_,j)=>j!==i);setBattleSlots(s);setActiveSlot(Math.min(activeSlot,s.length-1));}} style={{padding:"4px 7px",borderRadius:"0 6px 6px 0",border:`1px solid ${isActive?color+"80":"rgba(255,255,255,0.08)"}`,background:isActive?color+"20":"rgba(255,255,255,0.03)",color:"#718096",cursor:"pointer",fontSize:11,lineHeight:1,transition:"all 0.15s"}} title="Supprimer">✕</button>
+                  <button onClick={()=>{const s=battleSlots.filter((_,j)=>j!==i);setBattleSlots(s);setActiveSlot(Math.min(activeSlot,s.length-1));}} style={{padding:"4px 7px",borderRadius:"0 6px 6px 0",border:`1px solid ${isActive?color+"80":`${darkMode?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.15)"}`}`,background:isActive?color+"20":"rgba(255,255,255,0.03)",color:"#718096",cursor:"pointer",fontSize:11,lineHeight:1,transition:"all 0.15s"}} title="Supprimer">✕</button>
                 </div>
               );
             })}
             {battleSlots.length<3&&(
-              <button onClick={()=>{const next=CITIES.find(c=>!battleSlots.some(s=>s.id===c.id));if(next){setBattleSlots([...battleSlots,next]);setActiveSlot(battleSlots.length);}}} style={{padding:"4px 10px",borderRadius:6,border:"1px dashed rgba(255,255,255,0.15)",background:"transparent",color:"#4a5568",cursor:"pointer",fontSize:11,transition:"all 0.15s"}}>+ Ajouter</button>
+              <button onClick={()=>{const next=CITIES.find(c=>!battleSlots.some(s=>s.id===c.id));if(next){setBattleSlots([...battleSlots,next]);setActiveSlot(battleSlots.length);}}} style={{padding:"4px 10px",borderRadius:6,border:`1px dashed ${darkMode?"rgba(255,255,255,0.15)":"rgba(0,0,0,0.18)"}`,background:"transparent",color:"#4a5568",cursor:"pointer",fontSize:11,transition:"all 0.15s"}}>+ Ajouter</button>
             )}
           </div>
         </div>
@@ -4136,7 +4210,7 @@ export default function App(){
               {/* Continents */}
               <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
                 {["Tous",...CONTINENTS.filter(c=>c!=="Tous")].map(c=>(
-                  <button key={c} onClick={()=>setContinent(c)} style={{padding:"3px 9px",borderRadius:20,border:`1px solid ${continent===c?"rgba(255,107,53,0.45)":"rgba(255,255,255,0.07)"}`,background:continent===c?"rgba(255,107,53,0.12)":"transparent",color:continent===c?"#FF6B35":"#718096",fontSize:10,cursor:"pointer",fontWeight:continent===c?600:400}}>
+                  <button key={c} onClick={()=>setContinent(c)} style={{padding:"3px 9px",borderRadius:20,border:`1px solid ${continent===c?"rgba(255,107,53,0.45)":`${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}`,background:continent===c?"rgba(255,107,53,0.12)":"transparent",color:continent===c?"#FF6B35":"#718096",fontSize:10,cursor:"pointer",fontWeight:continent===c?600:400}}>
                     {c==="Tous"?t.allContinents:getContinent(c,lang)}
                   </button>
                 ))}
@@ -4144,16 +4218,16 @@ export default function App(){
 
               {/* Sort + random */}
               <div style={{display:"flex",gap:6}}>
-                <select value={sortOrder} onChange={e=>setSortOrder(e.target.value)} style={{flex:1,padding:"7px 8px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,color:"#a0aec0",fontSize:12,outline:"none",cursor:"pointer"}}>
+                <select value={sortOrder} onChange={e=>setSortOrder(e.target.value)} style={{flex:1,padding:"7px 8px",background:{$darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`,borderRadius:8,color:"#a0aec0",fontSize:12,outline:"none",cursor:"pointer"}}>
                   <option value="az">{t.sortAZ}</option>
                   <option value="price-asc">{t.sortCheap}</option>
                   <option value="price-desc">{t.sortExpensive}</option>
                 </select>
-                <button onClick={randomCity} title="Random" style={{padding:"7px 11px",borderRadius:8,border:"1px solid rgba(255,255,255,0.07)",background:"rgba(255,255,255,0.04)",color:"#a0aec0",cursor:"pointer",fontSize:15}}>{t.randomBtn}</button>
+                <button onClick={randomCity} title="Random" style={{padding:"7px 11px",borderRadius:8,border:`1px solid ${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`,background:{$darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"},color:"#a0aec0",cursor:"pointer",fontSize:15}}>{t.randomBtn}</button>
               </div>
 
               {/* Category filter toggle */}
-              <button onClick={()=>setShowFilters(!showFilters)} style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${showFilters||inactiveCount>0?"rgba(255,107,53,0.4)":"rgba(255,255,255,0.07)"}`,background:showFilters?"rgba(255,107,53,0.1)":"rgba(255,255,255,0.02)",color:showFilters||inactiveCount>0?"#FF6B35":"#718096",cursor:"pointer",fontSize:12,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <button onClick={()=>setShowFilters(!showFilters)} style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${showFilters||inactiveCount>0?"rgba(255,107,53,0.4)":darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`,background:showFilters?"rgba(255,107,53,0.1)":"rgba(255,255,255,0.02)",color:showFilters||inactiveCount>0?"#FF6B35":"#718096",cursor:"pointer",fontSize:12,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <span>{t.customCats}</span>
                 <span style={{fontSize:10,background:"rgba(255,107,53,0.15)",borderRadius:10,padding:"1px 6px"}}>{activeKeys.length}/8{inactiveCount>0?` (−${inactiveCount})`:""}</span>
               </button>
@@ -4226,7 +4300,7 @@ export default function App(){
             {/* DETAIL PANEL */}
             <div ref={detailRef} style={{flex:1,minWidth:0,background:darkMode?"rgba(255,255,255,0.02)":"rgba(255,255,255,0.9)",border:darkMode?"1px solid rgba(255,255,255,0.06)":"1px solid rgba(0,0,0,0.1)",borderRadius:16,padding:isMobile?12:24,...(isMobile?{scrollMarginTop:80,order:isMobile&&battleMode?1:0}:{})}}>
               {isMobile&&!battleMode&&(
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,paddingBottom:10,borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,paddingBottom:10,borderBottom:`1px solid ${darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.15)"}`}}>
                   <span style={{fontSize:20}}>{selectedCity.flag}</span>
                   <span style={{color:"#FF6B35",fontWeight:700,fontSize:14}}>{selectedCity.name}</span>
                   <span style={{fontSize:11,color:"#4a5568",marginLeft:"auto"}}>↑</span>
@@ -4241,7 +4315,7 @@ export default function App(){
         )}
       </div>
 
-      <div style={{borderTop:"1px solid rgba(255,255,255,0.04)",padding:"10px 24px",textAlign:"center",fontSize:10,color:"#2d3748",fontFamily:"'Space Mono',monospace"}}>
+      <div style={{borderTop:`1px solid ${darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"}`,padding:"10px 24px",textAlign:"center",fontSize:10,color:"#2d3748",fontFamily:"'Space Mono',monospace"}}>
         STUDENT GLOBE-TROTTER PRO 2026 · MADE WITH ❤️ BY ELIO
       </div>
     </div>

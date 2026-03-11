@@ -3302,38 +3302,14 @@ function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="f
 }
 
 // ── MAP VIEW ──
-// ISO 3166-1 numeric → continent mapping (comprehensive)
 const _mk2=(ids,n)=>Object.fromEntries(ids.map(id=>[id,n]));
 const ISO_CONT={
-  // EUROPE
-  ..._mk2([8,20,40,56,70,100,112,191,196,203,208,233,246,250,276,292,300,
-    336,348,352,372,380,428,438,440,442,470,492,498,499,528,578,616,620,
-    642,674,688,703,705,724,752,756,804,807,826,831,832,833,292,470,744,
-    854,729,818,248,175,531,534,663,666,654,388], "Europe"),
-  // ASIE
-  ..._mk2([4,31,48,50,51,64,96,104,116,144,156,158,268,270,275,356,360,364,
-    368,376,392,398,400,408,410,414,417,418,422,446,458,462,496,512,524,
-    566,586,608,626,634,682,702,703,704,760,762,764,784,792,860,887,792,
-    50,51,4,268,356,398,417,762,104,704], "Asie"),
-  // AFRIQUE
-  ..._mk2([12,24,72,108,120,132,140,148,174,175,178,180,204,226,231,232,
-    266,270,288,324,384,404,426,430,434,450,454,466,478,504,508,516,562,
-    566,624,638,646,678,686,694,706,710,716,728,732,748,768,788,800,818,
-    834,854,894,818,270,562,624,232,231,140,108,646,638,706,690,174,175,
-    86,736,204,226,288,384,430,466,504,566,624,768,800,834,894], "Afrique"),
-  // AMÉRIQUE DU NORD
-  ..._mk2([28,44,52,60,84,124,136,188,192,212,214,218,222,304,308,312,316,
-    320,332,340,388,474,484,500,533,534,535,558,591,659,660,662,663,666,
-    670,780,796,840,850,388,332,214,308,660,474,796,500,136,218,533,535],
-    "Amérique du Nord"),
-  // AMÉRIQUE DU SUD
-  ..._mk2([32,68,76,152,170,218,254,328,600,604,740,858,862,76,32,152,600,
-    604,862,740,68,328,254,170,218,858], "Amérique du Sud"),
-  // OCÉANIE
-  ..._mk2([36,90,184,242,258,296,316,520,540,548,554,570,574,580,583,585,
-    598,612,882,876,772,776,798,570,296,316,520,772,580,798,876,36,90,
-    184,242,258,296,316,520,540,548,554,574,583,585,598,612,882,876],
-    "Océanie"),
+  ..._mk2([8,20,40,56,70,100,112,191,196,203,208,233,246,250,276,292,300,336,348,352,372,380,428,438,440,442,470,492,498,499,528,578,616,620,642,674,688,703,705,724,752,756,804,807,826,831,832,833,744,248,175],"Europe"),
+  ..._mk2([4,31,48,50,51,64,96,104,116,144,156,158,268,275,356,360,364,368,376,392,398,400,408,410,414,417,418,422,446,458,462,496,512,524,586,608,626,634,682,702,704,760,762,764,784,792,860,887],"Asie"),
+  ..._mk2([12,24,72,108,120,132,140,148,174,175,178,180,204,226,231,232,266,270,288,324,384,404,426,430,434,450,454,466,478,504,508,516,562,566,624,638,646,678,686,694,706,710,716,728,732,748,768,788,800,818,834,854,894],"Afrique"),
+  ..._mk2([28,44,52,60,84,124,136,188,192,212,214,222,308,312,316,320,332,340,388,474,484,500,533,534,535,558,591,659,660,662,670,780,796,840,850],"Amérique du Nord"),
+  ..._mk2([32,68,76,152,170,218,254,328,600,604,740,858,862],"Amérique du Sud"),
+  ..._mk2([36,90,184,242,258,296,316,520,540,548,554,570,574,580,583,585,598,612,882,876,772,776,798],"Océanie"),
 };
 
 function geoRingToSVG(ring,W,H,open=false){
@@ -3355,133 +3331,135 @@ function geomToSVG(geom,W,H){
   return"";
 }
 
-// ── MAP VIEW ──
+function haversine(c1,c2){
+  const R=6371,toR=d=>d*Math.PI/180;
+  const p1=parseCoords(c1.coords),p2=parseCoords(c2.coords);
+  if(!p1||!p2)return 0;
+  const dLat=toR(p2.lat-p1.lat),dLng=toR(p2.lng-p1.lng);
+  const a=Math.sin(dLat/2)**2+Math.cos(toR(p1.lat))*Math.cos(toR(p2.lat))*Math.sin(dLng/2)**2;
+  return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+}
+
+function optimizeRoute(cities){
+  if(cities.length<=2)return cities;
+  const used=new Set([0]);const route=[cities[0]];
+  while(route.length<cities.length){
+    const last=route[route.length-1];let bestIdx=-1,bestDist=Infinity;
+    cities.forEach((_,i)=>{if(used.has(i))return;const d=haversine(last,cities[i]);if(d<bestDist){bestDist=d;bestIdx=i;}});
+    used.add(bestIdx);route.push(cities[bestIdx]);
+  }
+  return route;
+}
+
+function cityToXY(city,W,H){
+  const p=parseCoords(city.coords);if(!p)return null;
+  return{x:((p.lng+180)/360)*W,y:((83-p.lat)/166)*H};
+}
+
 function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lang,darkMode}){
-  const[hovered,setHovered]=useState(null);
-  const[selected,setSelected]=useState(null);
-  const[mapCont,setMapCont]=useState("Tous");
+  const dm=darkMode;const W=900,H=460;
   const[geodata,setGeodata]=useState(null);
   const[zoom,setZoom]=useState(1);
   const[pan,setPan]=useState({x:0,y:0});
   const[dragging,setDragging]=useState(false);
   const[dragStart,setDragStart]=useState(null);
+  const[hovered,setHovered]=useState(null);
+  const[selected,setSelected]=useState(null);
+  const[mapCont,setMapCont]=useState("Tous");
   const svgRef=useRef(null);
-  const W=900,H=460;
+  // Search
+  const[searchQ,setSearchQ]=useState("");
+  const[showSugg,setShowSugg]=useState(false);
+  const suggestions=useMemo(()=>{
+    if(!searchQ.trim())return[];
+    const q=searchQ.toLowerCase();
+    return CITIES.filter(c=>c.name.toLowerCase().includes(q)||c.country.toLowerCase().includes(q)).slice(0,7);
+  },[searchQ]);
+  // Price filter
+  const GLOBAL_MIN=400,GLOBAL_MAX=3600;
+  const[priceMin,setPriceMin]=useState(GLOBAL_MIN);
+  const[priceMax,setPriceMax]=useState(GLOBAL_MAX);
+  const[priceActive,setPriceActive]=useState(false);
+  // Itinerary
+  const[itinMode,setItinMode]=useState(false);
+  const[itinCities,setItinCities]=useState([]);
+  const[itinOptimized,setItinOptimized]=useState(false);
+  const[itinPanel,setItinPanel]=useState(false);
 
-  // Load TopoJSON countries-50m (high precision, real outlines)
   useEffect(()=>{
     const loadScript=(src)=>new Promise((res,rej)=>{
       if(document.querySelector(`script[src="${src}"]`)){res();return;}
-      const s=document.createElement("script");
-      s.src=src;s.onload=res;s.onerror=rej;
-      document.head.appendChild(s);
+      const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);
     });
     loadScript("https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js")
       .then(()=>fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json"))
       .then(r=>r.json())
       .then(topo=>{
-        const features=window.topojson.feature(topo,topo.objects.countries).features;
-        const borders=window.topojson.mesh(topo,topo.objects.countries,(a,b)=>a!==b);
-        setGeodata({features,borders});
-      })
-      .catch(console.error);
+        setGeodata({
+          features:window.topojson.feature(topo,topo.objects.countries).features,
+          borders:window.topojson.mesh(topo,topo.objects.countries,(a,b)=>a!==b)
+        });
+      }).catch(console.error);
   },[]);
 
-  const visibleCities=useMemo(()=>
-    CITIES.filter(c=>(mapCont==="Tous"||c.continent===mapCont)&&parseCoords(c.coords))
-  ,[mapCont]);
+  const cityPoints=useMemo(()=>CITIES.filter(c=>{
+    if(!parseCoords(c.coords))return false;
+    if(mapCont!=="Tous"&&c.continent!==mapCont)return false;
+    if(priceActive){const tot=calcTotal(c,preset,activeKeys,extraCost);if(tot<priceMin||tot>priceMax)return false;}
+    return true;
+  }).map(city=>{const pos=cityToXY(city,W,H);return pos?{city,...pos}:null;}).filter(Boolean),[mapCont,priceActive,priceMin,priceMax,preset,activeKeys,extraCost]);
 
-  const cityPoints=useMemo(()=>
-    visibleCities.map(city=>{
-      const{lat,lng}=parseCoords(city.coords);
-      const latTop=83,latRange=166;
-      const x=((lng+180)/360)*W;
-      const y=((latTop-lat)/latRange)*H;
-      return{city,x,y};
-    })
-  ,[visibleCities]);
+  const itinRoute=useMemo(()=>itinOptimized?optimizeRoute(itinCities):itinCities,[itinCities,itinOptimized]);
+  const itinStats=useMemo(()=>{
+    if(itinRoute.length<2)return null;
+    let dist=0;for(let i=0;i<itinRoute.length-1;i++)dist+=haversine(itinRoute[i],itinRoute[i+1]);
+    return{dist,avgCost:Math.round(itinRoute.reduce((s,c)=>s+calcTotal(c,preset,activeKeys,extraCost),0)/itinRoute.length)};
+  },[itinRoute,preset,activeKeys,extraCost]);
 
-  const info=selected||hovered;
+  const clampPan=(px,py,z)=>({x:Math.min(0,Math.max(W*(1-z),px)),y:Math.min(0,Math.max(H*(1-z),py))});
+  const resetView=()=>{setZoom(1);setPan({x:0,y:0});};
 
-  // Zoom with mouse wheel
   const handleWheel=useCallback((e)=>{
     e.preventDefault();
     const factor=e.deltaY<0?1.2:1/1.2;
-    const newZoom=Math.min(12,Math.max(1,zoom*factor));
-    // Zoom toward cursor position
+    const nz=Math.min(12,Math.max(1,zoom*factor));
     const rect=svgRef.current?.getBoundingClientRect();
-    if(rect){
-      const cx=(e.clientX-rect.left)/rect.width*W;
-      const cy=(e.clientY-rect.top)/rect.height*H;
-      const svgX=(cx-pan.x)/zoom;
-      const svgY=(cy-pan.y)/zoom;
-      const newPanX=cx-svgX*newZoom;
-      const newPanY=cy-svgY*newZoom;
-      const maxPanX=0,minPanX=W*(1-newZoom);
-      const maxPanY=0,minPanY=H*(1-newZoom);
-      setPan({
-        x:Math.min(maxPanX,Math.max(minPanX,newPanX)),
-        y:Math.min(maxPanY,Math.max(minPanY,newPanY))
-      });
-    }
-    setZoom(newZoom);
+    if(rect){const cx=(e.clientX-rect.left)/rect.width*W,cy=(e.clientY-rect.top)/rect.height*H;const sx=(cx-pan.x)/zoom,sy=(cy-pan.y)/zoom;setPan(clampPan(cx-sx*nz,cy-sy*nz,nz));}
+    setZoom(nz);
   },[zoom,pan]);
+  useEffect(()=>{const el=svgRef.current;if(!el)return;el.addEventListener("wheel",handleWheel,{passive:false});return()=>el.removeEventListener("wheel",handleWheel);},[handleWheel]);
+  const handleMouseDown=useCallback((e)=>{if(e.button!==0)return;setDragging(true);setDragStart({x:e.clientX-pan.x,y:e.clientY-pan.y});},[pan]);
+  const handleMouseMove=useCallback((e)=>{if(!dragging||!dragStart)return;setPan(clampPan(e.clientX-dragStart.x,e.clientY-dragStart.y,zoom));},[dragging,dragStart,zoom]);
+  const handleMouseUp=useCallback(()=>{setDragging(false);setDragStart(null);},[]);
 
-  useEffect(()=>{
-    const el=svgRef.current;
-    if(!el)return;
-    el.addEventListener("wheel",handleWheel,{passive:false});
-    return()=>el.removeEventListener("wheel",handleWheel);
-  },[handleWheel]);
+  const focusCity=useCallback((city)=>{
+    const pos=cityToXY(city,W,H);if(!pos)return;
+    const tz=Math.max(4,zoom);const nx=W/2-pos.x*tz,ny=H/2-pos.y*tz;
+    const clamped=clampPan(nx,ny,tz);setZoom(tz);setPan(clamped);setSelected(city);
+  },[zoom]);
 
-  const handleMouseDown=useCallback((e)=>{
-    if(e.button!==0)return;
-    setDragging(true);
-    setDragStart({x:e.clientX-pan.x,y:e.clientY-pan.y});
-  },[pan]);
+  const focusContinent=(c)=>{
+    const cfg={"Europe":{z:3.5,px:-290,py:-60},"Asie":{z:2.2,px:-620,py:-60},"Amérique du Nord":{z:2.0,px:-5,py:-40},"Amérique du Sud":{z:2.5,px:-100,py:-290},"Afrique":{z:2.5,px:-350,py:-180},"Océanie":{z:2.8,px:-990,py:-290}};
+    if(c==="Tous"){resetView();return;}const v=cfg[c];if(v){setZoom(v.z);setPan(clampPan(v.px,v.py,v.z));}
+  };
 
-  const handleMouseMove=useCallback((e)=>{
-    if(!dragging||!dragStart)return;
-    const newPanX=e.clientX-dragStart.x;
-    const newPanY=e.clientY-dragStart.y;
-    const maxPanX=0,minPanX=W*(1-zoom);
-    const maxPanY=0,minPanY=H*(1-zoom);
-    setPan({
-      x:Math.min(maxPanX,Math.max(minPanX,newPanX)),
-      y:Math.min(maxPanY,Math.max(minPanY,newPanY))
-    });
-  },[dragging,dragStart,zoom]);
+  const handleCityClick=useCallback((city,e)=>{
+    e.stopPropagation();if(dragging)return;
+    if(itinMode){setItinCities(prev=>prev.find(c=>c.id===city.id)?prev.filter(c=>c.id!==city.id):[...prev,city]);}
+    else{setSelected(s=>s?.id===city.id?null:city);}
+  },[dragging,itinMode]);
 
-  const handleMouseUp=useCallback(()=>{
-    setDragging(false);
-    setDragStart(null);
-  },[]);
-
-  const resetView=()=>{setZoom(1);setPan({x:0,y:0});};
-
-  // Focus on a continent
-  const focusContinent=useCallback((c)=>{
-    const CONT_ZOOM={
-      "Europe":{z:3.5,px:-290,py:-60},
-      "Asie":{z:2.2,px:-620,py:-60},
-      "Amérique du Nord":{z:2.0,px:-5,py:-40},
-      "Amérique du Sud":{z:2.5,px:-100,py:-290},
-      "Afrique":{z:2.5,px:-350,py:-180},
-      "Océanie":{z:2.8,px:-990,py:-290},
-    };
-    if(c==="Tous"){resetView();return;}
-    const cfg=CONT_ZOOM[c];
-    if(cfg){setZoom(cfg.z);setPan({x:cfg.px,y:cfg.py});}
-  },[]);
-
-  const dm=darkMode;
+  const info=selected||hovered;
+  const bStyle=(extra={})=>({border:`1px solid ${dm?"rgba(255,255,255,0.12)":"rgba(0,0,0,0.12)"}`,background:dm?"rgba(15,23,42,0.88)":"rgba(255,255,255,0.92)",color:dm?"#94a3b8":"#374151",backdropFilter:"blur(6px)",borderRadius:8,cursor:"pointer",...extra});
 
   return(
-    <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+    <div style={{display:"flex",flexDirection:"column",gap:14}}>
+
+      {/* Header */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
         <div>
           <h2 style={{margin:0,fontSize:20,fontWeight:800,color:dm?"#f7fafc":"#1a202c"}}>{t.mapTitle}</h2>
-          <p style={{margin:"4px 0 0",fontSize:12,color:"#718096"}}>{t.mapHint} · Molette pour zoomer · Glisser pour naviguer</p>
+          <p style={{margin:"3px 0 0",fontSize:11,color:"#718096"}}>Molette · glisser · clic pour explorer · {cityPoints.length} villes affichées</p>
         </div>
         <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
           {["Tous",...Object.keys(CONT_COLORS)].map(c=>(
@@ -3492,93 +3470,148 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
         </div>
       </div>
 
+      {/* Tools bar */}
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+        {/* Search */}
+        <div style={{position:"relative",flex:"1",minWidth:180}}>
+          <div style={{position:"relative"}}>
+            <span style={{position:"absolute",left:9,top:"50%",transform:"translateY(-50%)",fontSize:12,pointerEvents:"none",opacity:0.4}}>🔍</span>
+            <input value={searchQ} onChange={e=>{setSearchQ(e.target.value);setShowSugg(true);}} onFocus={()=>setShowSugg(true)} onBlur={()=>setTimeout(()=>setShowSugg(false),200)}
+              placeholder="Rechercher une ville…"
+              style={{width:"100%",padding:"7px 28px 7px 30px",fontSize:12,outline:"none",...bStyle({borderRadius:10})}}
+            />
+            {searchQ&&<button onClick={()=>setSearchQ("")} style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:11,color:"#718096"}}>✕</button>}
+          </div>
+          {showSugg&&suggestions.length>0&&(
+            <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,zIndex:100,borderRadius:10,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.4)",...bStyle({padding:0,cursor:"default"})}}>
+              {suggestions.map(city=>{
+                const total=calcTotal(city,preset,activeKeys,extraCost);const color=CONT_COLORS[city.continent]||"#aaa";
+                return(
+                  <div key={city.id} onMouseDown={()=>{focusCity(city);setSearchQ(city.name);setShowSugg(false);}}
+                    style={{padding:"8px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:8,borderBottom:`1px solid ${dm?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.05)"}`}}
+                    onMouseEnter={e=>e.currentTarget.style.background=dm?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.04)"}
+                    onMouseLeave={e=>e.currentTarget.style.background=""}
+                  >
+                    <span style={{fontSize:18}}>{city.flag}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,fontWeight:700,color:dm?"#f1f5f9":"#0f172a"}}>{city.name}</div>
+                      <div style={{fontSize:10,color:"#718096"}}>{city.country}</div>
+                    </div>
+                    <span style={{fontSize:11,fontWeight:700,fontFamily:"monospace",color}}>{total}€</span>
+                    <span style={{fontSize:9,color,background:color+"22",padding:"1px 6px",borderRadius:10}}>{city.continent.replace("Amérique du ","Am.")}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Price filter button */}
+        <button onClick={()=>setPriceActive(p=>!p)} style={{padding:"7px 13px",fontSize:12,fontWeight:600,...bStyle({border:`1px solid ${priceActive?"#FF6B35":"rgba(255,255,255,0.12)"}`,color:priceActive?"#FF6B35":dm?"#94a3b8":"#374151"})}}>
+          💰 {priceActive?`${priceMin}–${priceMax}€`:"Filtre prix"}
+        </button>
+
+        {/* Itinerary button */}
+        <button onClick={()=>{setItinMode(m=>!m);if(itinMode){setItinCities([]);setItinPanel(false);}}} style={{padding:"7px 13px",fontSize:12,fontWeight:600,...bStyle({border:`1px solid ${itinMode?"#a78bfa":"rgba(255,255,255,0.12)"}`,color:itinMode?"#a78bfa":dm?"#94a3b8":"#374151"})}}>
+          ✈️ {itinMode?`Itinéraire (${itinCities.length})`:"Itinéraire"}
+        </button>
+        {itinMode&&itinCities.length>=2&&(
+          <button onClick={()=>setItinPanel(p=>!p)} style={{padding:"7px 13px",fontSize:12,fontWeight:700,background:"linear-gradient(135deg,#a78bfa,#818cf8)",border:"none",color:"#fff",cursor:"pointer",borderRadius:8}}>
+            Résumé →
+          </button>
+        )}
+      </div>
+
+      {/* Price slider */}
+      {priceActive&&(
+        <div style={{padding:"12px 16px",borderRadius:12,...bStyle({display:"flex",gap:16,alignItems:"center",flexWrap:"wrap",cursor:"default"})}}>
+          <span style={{fontSize:11,fontWeight:600,color:dm?"#94a3b8":"#6b7280",whiteSpace:"nowrap"}}>💰 Budget mensuel :</span>
+          <div style={{flex:1,display:"flex",gap:12,alignItems:"center",minWidth:200}}>
+            <span style={{fontSize:11,fontFamily:"monospace",color:"#FF6B35",fontWeight:700,minWidth:50}}>{priceMin}€</span>
+            <div style={{flex:1,position:"relative",height:24,display:"flex",alignItems:"center"}}>
+              <div style={{position:"absolute",left:0,right:0,height:4,borderRadius:2,background:dm?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.1)"}}/>
+              <div style={{position:"absolute",left:`${(priceMin-GLOBAL_MIN)/(GLOBAL_MAX-GLOBAL_MIN)*100}%`,right:`${100-(priceMax-GLOBAL_MIN)/(GLOBAL_MAX-GLOBAL_MIN)*100}%`,height:4,borderRadius:2,background:"linear-gradient(to right,#FF6B35,#a78bfa)"}}/>
+              <input type="range" min={GLOBAL_MIN} max={GLOBAL_MAX} step={50} value={priceMin} onChange={e=>setPriceMin(Math.min(+e.target.value,priceMax-100))} style={{position:"absolute",width:"100%",opacity:0,height:24,zIndex:2,cursor:"pointer"}}/>
+              <input type="range" min={GLOBAL_MIN} max={GLOBAL_MAX} step={50} value={priceMax} onChange={e=>setPriceMax(Math.max(+e.target.value,priceMin+100))} style={{position:"absolute",width:"100%",opacity:0,height:24,zIndex:3,cursor:"pointer"}}/>
+            </div>
+            <span style={{fontSize:11,fontFamily:"monospace",color:"#a78bfa",fontWeight:700,minWidth:50,textAlign:"right"}}>{priceMax}€</span>
+          </div>
+          <span style={{fontSize:10,color:"#718096"}}>{cityPoints.length} villes</span>
+          <button onClick={()=>{setPriceMin(GLOBAL_MIN);setPriceMax(GLOBAL_MAX);}} style={{fontSize:10,color:"#718096",background:"none",border:"none",cursor:"pointer",textDecoration:"underline"}}>reset</button>
+        </div>
+      )}
+
+      {/* Itinerary hint */}
+      {itinMode&&(
+        <div style={{padding:"8px 14px",borderRadius:10,background:"rgba(167,139,250,0.08)",border:"1px solid rgba(167,139,250,0.25)",fontSize:11,color:dm?"#c4b5fd":"#7c3aed",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+          <span>✈️</span>
+          <span style={{flex:1}}>{itinCities.length===0?"Clique sur les villes pour construire ton itinéraire":itinCities.length===1?"Ajoute au moins une autre ville":itinCities.length+" étapes · clique à nouveau pour retirer"}</span>
+          {itinCities.length>0&&<button onClick={()=>setItinCities([])} style={{fontSize:10,color:"#a78bfa",background:"none",border:"none",cursor:"pointer"}}>Effacer tout</button>}
+          {itinCities.length>=2&&<button onClick={()=>setItinOptimized(o=>!o)} style={{fontSize:10,padding:"2px 8px",borderRadius:6,background:itinOptimized?"#a78bfa22":"transparent",border:"1px solid #a78bfa55",color:"#a78bfa",cursor:"pointer"}}>{itinOptimized?"✓ Optimisé":"Optimiser l'ordre"}</button>}
+        </div>
+      )}
+
       <div style={{display:"flex",flexDirection:isMobile?"column":"row",gap:16}}>
-        {/* SVG Map */}
+
+        {/* ── SVG MAP ── */}
         <div style={{flex:1,background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.04)",borderRadius:16,border:dm?"1px solid rgba(255,255,255,0.06)":"1px solid rgba(0,0,0,0.12)",overflow:"hidden",position:"relative",userSelect:"none"}}>
-          <svg
-            ref={svgRef}
-            viewBox={`0 0 ${W} ${H}`}
+          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
             style={{width:"100%",height:"auto",display:"block",cursor:dragging?"grabbing":zoom>1?"grab":"crosshair"}}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
           >
-            {/* Ocean */}
             <rect width={W} height={H} fill={dm?"#0d1f35":"#a8c5d8"}/>
             <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
-              {/* Country fills from TopoJSON */}
-              {geodata?geodata.features.map((feat)=>{
-                const contName=ISO_CONT[+feat.id];
-                const color=contName?CONT_COLORS[contName]:"#555";
-                const isActive=contName&&(mapCont==="Tous"||mapCont===contName);
-                const d=geomToSVG(feat.geometry,W,H);
-                if(!d)return null;
+              {geodata?geodata.features.map(feat=>{
+                const cn=ISO_CONT[+feat.id];const color=cn?CONT_COLORS[cn]:"#555";const isAct=cn&&(mapCont==="Tous"||mapCont===cn);
+                const d=geomToSVG(feat.geometry,W,H);if(!d)return null;
+                return<path key={feat.id} d={d} fill={color} fillOpacity={isAct?(dm?0.25:0.35):(dm?0.04:0.06)} stroke={color} strokeOpacity={isAct?(dm?0.55:0.6):0.08} strokeWidth={0.5/zoom}/>;
+              }):WORLD_PATHS.map((p,i)=><path key={i} d={p.d} fill={dm?p.fill:"#b8c9b0"} stroke={dm?"rgba(100,160,220,0.25)":"rgba(255,255,255,0.7)"} strokeWidth={0.8/zoom}/>)}
+              {geodata&&(()=>{const d=geomToSVG(geodata.borders,W,H);return d?<path d={d} fill="none" stroke={dm?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.2)"} strokeWidth={0.35/zoom} style={{pointerEvents:"none"}}/>:null;})()}
+              {[-60,-30,0,30,60].map(lat=>{const y=((83-lat)/166)*H;return<g key={lat}><line x1={0} y1={y} x2={W} y2={y} stroke={dm?lat===0?"rgba(255,255,255,0.18)":"rgba(255,255,255,0.05)":lat===0?"rgba(0,0,0,0.18)":"rgba(0,0,0,0.07)"} strokeWidth={(lat===0?1.2:0.5)/zoom} strokeDasharray={lat===0?"4,3":"none"}/>{zoom<3&&<text x={3/zoom} y={y-2/zoom} fontSize={7/zoom} fill={dm?"rgba(255,255,255,0.25)":"rgba(0,0,0,0.3)"} fontFamily="monospace">{lat===0?"Éq.":Math.abs(lat)+"°"+(lat>0?"N":"S")}</text>}</g>;})}
+              {[-150,-120,-90,-60,-30,0,30,60,90,120,150].map(lng=><line key={lng} x1={((lng+180)/360)*W} y1={0} x2={((lng+180)/360)*W} y2={H} stroke={dm?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.05)"} strokeWidth={0.5/zoom}/>)}
+
+              {/* Itinerary lines */}
+              {itinMode&&itinRoute.length>=2&&itinRoute.map((city,i)=>{
+                if(i===0)return null;
+                const a=cityToXY(itinRoute[i-1],W,H),b=cityToXY(city,W,H);if(!a||!b)return null;
+                const d=haversine(itinRoute[i-1],city);
                 return(
-                  <path key={feat.id} d={d}
-                    fill={color}
-                    fillOpacity={isActive?(dm?0.25:0.35):(dm?0.04:0.06)}
-                    stroke={color}
-                    strokeOpacity={isActive?(dm?0.55:0.6):0.08}
-                    strokeWidth={0.5/zoom}
-                  />
+                  <g key={`ln${i}`} style={{pointerEvents:"none"}}>
+                    <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="#a78bfa" strokeWidth={2/zoom} strokeDasharray={`${7/zoom},${3/zoom}`} opacity={0.75}/>
+                    <text x={(a.x+b.x)/2} y={(a.y+b.y)/2-5/zoom} textAnchor="middle" fontSize={6.5/zoom} fill="#c4b5fd" fontFamily="monospace" fontWeight="700">{d<1000?d+"km":(d/1000).toFixed(1)+"k"}</text>
+                  </g>
                 );
-              }):(
-                // Fallback shapes while loading
-                WORLD_PATHS.map((p,i)=>(
-                  <path key={i} d={p.d} fill={dm?p.fill:"#b8c9b0"} stroke={dm?"rgba(100,160,220,0.25)":"rgba(255,255,255,0.7)"} strokeWidth={0.8/zoom}/>
-                ))
-              )}
-              {/* Country border lines */}
-              {geodata&&(()=>{
-                const d=geomToSVG(geodata.borders,W,H);
-                return d?<path d={d} fill="none" stroke={dm?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.2)"} strokeWidth={0.35/zoom} style={{pointerEvents:"none"}}/>:null;
-              })()}
-              {/* Grid lines */}
-              {[-60,-30,0,30,60].map(lat=>{
-                const latTop=83,latRange=166;
-                const y=((latTop-lat)/latRange)*H;
-                return(<g key={lat}>
-                  <line x1={0} y1={y} x2={W} y2={y} stroke={dm?lat===0?"rgba(255,255,255,0.18)":"rgba(255,255,255,0.05)":lat===0?"rgba(0,0,0,0.18)":"rgba(0,0,0,0.07)"} strokeWidth={(lat===0?1.2:0.5)/zoom} strokeDasharray={lat===0?"4,3":"none"}/>
-                  {zoom<3&&<text x={3/zoom} y={y-2/zoom} fontSize={7/zoom} fill={dm?"rgba(255,255,255,0.25)":"rgba(0,0,0,0.3)"} fontFamily="monospace">{lat===0?"Éq.":Math.abs(lat)+"°"+(lat>0?"N":"S")}</text>}
-                </g>);
               })}
-              {[-150,-120,-90,-60,-30,0,30,60,90,120,150].map(lng=>{
-                const x=((lng+180)/360)*W;
-                return(<line key={lng} x1={x} y1={0} x2={x} y2={H} stroke={dm?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.05)"} strokeWidth={0.5/zoom}/>);
-              })}
+
               {/* City dots */}
               {cityPoints.map(({city,x,y})=>{
-                const isHov=hovered?.id===city.id;
-                const isSel=selected?.id===city.id;
-                const isFav=favorites.has(city.id);
-                const color=CONT_COLORS[city.continent]||"#aaa";
-                const total=calcTotal(city,preset,activeKeys,extraCost);
+                const isHov=hovered?.id===city.id,isSel=selected?.id===city.id,isFav=favorites.has(city.id);
+                const inItin=itinCities.some(c=>c.id===city.id);const itinIdx=itinRoute.findIndex(c=>c.id===city.id);
+                const color=CONT_COLORS[city.continent]||"#aaa";const total=calcTotal(city,preset,activeKeys,extraCost);
                 const r=Math.max(1.5,4/Math.sqrt(zoom));
+                const dc=inItin?"#a78bfa":isSel?"#FFD700":color;const dr=inItin?r*2.2:isSel?r*1.9:isHov?r*1.6:isFav?r*1.3:r;
                 return(
-                  <g key={city.id} style={{cursor:"pointer"}}
-                    onClick={(e)=>{e.stopPropagation();if(!dragging)setSelected(s=>s?.id===city.id?null:city);}}
-                    onMouseEnter={()=>setHovered(city)}
-                    onMouseLeave={()=>setHovered(null)}
-                  >
-                    {(isHov||isSel)&&<circle cx={x} cy={y} r={r*2.5} fill={color} opacity={0.15}/>}
-                    <circle cx={x} cy={y} r={isSel?r*1.8:isHov?r*1.5:isFav?r*1.3:r}
-                      fill={isSel?"#FFD700":color}
-                      stroke={dm?"rgba(0,0,0,0.5)":"rgba(255,255,255,0.8)"}
-                      strokeWidth={(isSel?1.5:1)/zoom}
-                      opacity={0.92}
-                    />
-                    {isFav&&!isSel&&<text x={x} y={y-r*1.8} textAnchor="middle" fontSize={8/zoom} fill="#FFD700">★</text>}
-                    {(isHov||isSel)&&zoom>=1&&(()=>{
-                      const fw=city.name.length*5.5+total.toString().length*6+32;
-                      const bx=Math.min(x+6/zoom,W-fw/zoom-4/zoom);
-                      const by=y-20/zoom<2/zoom?y+4/zoom:y-20/zoom;
+                  <g key={city.id} style={{cursor:"pointer"}} onClick={e=>handleCityClick(city,e)} onMouseEnter={()=>setHovered(city)} onMouseLeave={()=>setHovered(null)}>
+                    {(isHov||isSel||inItin)&&<circle cx={x} cy={y} r={dr*2.2} fill={dc} opacity={0.12}/>}
+                    <circle cx={x} cy={y} r={dr} fill={dc} stroke={dm?"rgba(0,0,0,0.5)":"rgba(255,255,255,0.8)"} strokeWidth={(isSel||inItin?1.5:1)/zoom} opacity={0.95}/>
+                    {inItin&&itinIdx>=0&&zoom>=2&&<text x={x} y={y+3.5/zoom} textAnchor="middle" fontSize={7/zoom} fill="#fff" fontWeight="800">{itinIdx+1}</text>}
+                    {isFav&&!isSel&&!inItin&&<text x={x} y={y-dr*1.9} textAnchor="middle" fontSize={8/zoom} fill="#FFD700">★</text>}
+                    {(isHov||isSel)&&!itinMode&&zoom>=1&&(()=>{
+                      const fw=city.name.length*5.5+total.toString().length*6+32;const bx=Math.min(x+6/zoom,W-fw/zoom-4/zoom);const by=y-20/zoom<2/zoom?y+4/zoom:y-20/zoom;
                       return(
                         <g style={{pointerEvents:"none"}}>
-                          <rect x={bx} y={by} width={fw/zoom} height={16/zoom} rx={3/zoom}
-                            fill={dm?"#0f172a":"#ffffff"} stroke={color} strokeWidth={0.8/zoom} opacity={0.97}/>
+                          <rect x={bx} y={by} width={fw/zoom} height={16/zoom} rx={3/zoom} fill={dm?"#0f172a":"#fff"} stroke={color} strokeWidth={0.8/zoom} opacity={0.97}/>
                           <text x={bx+4/zoom} y={by+10/zoom} fontSize={9/zoom} fill={dm?"#f1f5f9":"#0f172a"} fontWeight="700">{city.flag} {city.name}</text>
                           <text x={bx+fw/zoom-4/zoom} y={by+10/zoom} textAnchor="end" fontSize={9/zoom} fill={color} fontWeight="700" fontFamily="monospace">{total}€</text>
+                        </g>
+                      );
+                    })()}
+                    {isHov&&itinMode&&zoom>=1&&(()=>{
+                      const fw=city.name.length*5.5+42;const bx=Math.min(x+6/zoom,W-fw/zoom-4/zoom);const by=y-20/zoom<2/zoom?y+4/zoom:y-20/zoom;
+                      return(
+                        <g style={{pointerEvents:"none"}}>
+                          <rect x={bx} y={by} width={fw/zoom} height={14/zoom} rx={3/zoom} fill={dm?"#0f172a":"#fff"} stroke="#a78bfa" strokeWidth={0.8/zoom} opacity={0.97}/>
+                          <text x={bx+4/zoom} y={by+9/zoom} fontSize={8/zoom} fill="#c4b5fd" fontWeight="700">{inItin?"✕ Retirer":"＋ Ajouter"} {city.flag} {city.name}</text>
                         </g>
                       );
                     })()}
@@ -3590,12 +3623,12 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
 
           {/* Zoom controls */}
           <div style={{position:"absolute",top:10,right:10,display:"flex",flexDirection:"column",gap:4}}>
-            {[{l:"＋",f:()=>setZoom(z=>Math.min(12,z*1.4))},{l:"－",f:()=>setZoom(z=>Math.max(1,z/1.4))},{l:"↺",f:resetView}].map(({l,f})=>(
-              <button key={l} onClick={f} style={{width:28,height:28,borderRadius:6,border:dm?"1px solid rgba(255,255,255,0.15)":"1px solid rgba(0,0,0,0.15)",background:dm?"rgba(15,23,42,0.85)":"rgba(255,255,255,0.85)",color:dm?"#94a3b8":"#374151",fontSize:14,cursor:"pointer",fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(4px)"}}>
+            {[{l:"＋",f:()=>setZoom(z=>{const nz=Math.min(12,z*1.4);setPan(p=>clampPan(p.x,p.y,nz));return nz;})},{l:"－",f:()=>setZoom(z=>{const nz=Math.max(1,z/1.4);setPan(p=>clampPan(p.x,p.y,nz));return nz;})},{l:"↺",f:resetView}].map(({l,f})=>(
+              <button key={l} onClick={f} style={{width:28,height:28,...bStyle({display:"flex",alignItems:"center",justifyContent:"center",fontSize:l==="↺"?13:16,fontWeight:700,padding:0})}}>
                 {l}
               </button>
             ))}
-            {zoom>1&&<div style={{fontSize:9,color:"#718096",textAlign:"center",marginTop:2}}>{Math.round(zoom*10)/10}×</div>}
+            {zoom>1&&<div style={{fontSize:9,color:"#718096",textAlign:"center"}}>{Math.round(zoom*10)/10}×</div>}
           </div>
 
           {/* Legend */}
@@ -3607,25 +3640,68 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
               </div>
             ))}
           </div>
-
-          {/* Loading indicator */}
-          {!geodata&&(
-            <div style={{position:"absolute",top:10,left:12,fontSize:10,color:"rgba(255,255,255,0.4)",background:"rgba(0,0,0,0.4)",padding:"3px 8px",borderRadius:6,backdropFilter:"blur(4px)"}}>
-              Chargement carte HD...
-            </div>
-          )}
+          {!geodata&&<div style={{position:"absolute",top:10,left:12,fontSize:10,color:"rgba(255,255,255,0.4)",background:"rgba(0,0,0,0.4)",padding:"3px 8px",borderRadius:6,backdropFilter:"blur(4px)"}}>Chargement carte HD…</div>}
         </div>
 
-        {/* City info panel */}
-        <div style={{width:isMobile?"100%":280,flexShrink:0}}>
-          {info?(
-            <div style={{background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)",borderRadius:14,border:`1px solid ${CONT_COLORS[info.continent]||"#FF6B35"}40`,padding:16,height:"100%"}}>
+        {/* ── RIGHT PANEL ── */}
+        <div style={{width:isMobile?"100%":290,flexShrink:0,display:"flex",flexDirection:"column",gap:10}}>
+
+          {/* Itinerary summary */}
+          {itinMode&&itinPanel&&itinRoute.length>=2?(
+            <div style={{borderRadius:14,border:"1px solid rgba(167,139,250,0.3)",background:dm?"rgba(167,139,250,0.06)":"rgba(167,139,250,0.04)",padding:14,flex:1,overflowY:"auto",maxHeight:460}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <div style={{fontSize:14,fontWeight:800,color:dm?"#c4b5fd":"#7c3aed"}}>✈️ Mon itinéraire</div>
+                <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                  <button onClick={()=>setItinOptimized(o=>!o)} style={{fontSize:9,padding:"2px 7px",borderRadius:6,background:itinOptimized?"#a78bfa":"transparent",border:"1px solid #a78bfa55",color:itinOptimized?"#fff":"#a78bfa",cursor:"pointer"}}>{itinOptimized?"✓ Optimisé":"Optimiser"}</button>
+                  <button onClick={()=>setItinPanel(false)} style={{fontSize:14,color:"#718096",background:"none",border:"none",cursor:"pointer",lineHeight:1}}>✕</button>
+                </div>
+              </div>
+              {itinStats&&(
+                <div style={{display:"flex",gap:8,marginBottom:12}}>
+                  <div style={{flex:1,background:dm?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.04)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
+                    <div style={{fontSize:9,color:"#718096",marginBottom:2}}>DISTANCE</div>
+                    <div style={{fontSize:15,fontWeight:800,color:"#a78bfa",fontFamily:"monospace"}}>{itinStats.dist>=10000?(itinStats.dist/1000).toFixed(0)+"k":itinStats.dist.toLocaleString()} km</div>
+                  </div>
+                  <div style={{flex:1,background:dm?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.04)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
+                    <div style={{fontSize:9,color:"#718096",marginBottom:2}}>COÛT MOY.</div>
+                    <div style={{fontSize:15,fontWeight:800,color:"#FF6B35",fontFamily:"monospace"}}>{itinStats.avgCost}€</div>
+                  </div>
+                </div>
+              )}
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                {itinRoute.map((city,i)=>{
+                  const total=calcTotal(city,preset,activeKeys,extraCost);const color=CONT_COLORS[city.continent]||"#aaa";
+                  const dist=i>0?haversine(itinRoute[i-1],city):null;
+                  return(
+                    <div key={city.id}>
+                      {dist&&<div style={{paddingLeft:16,fontSize:9,color:"#a78bfa",fontFamily:"monospace",margin:"2px 0"}}>│ {dist.toLocaleString()} km ↓</div>}
+                      <div style={{display:"flex",alignItems:"center",gap:7,padding:"7px 9px",borderRadius:9,background:dm?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.03)",border:`1px solid ${color}22`}}>
+                        <div style={{width:19,height:19,borderRadius:"50%",background:"#a78bfa",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,color:"#fff",flexShrink:0}}>{i+1}</div>
+                        <span style={{fontSize:17}}>{city.flag}</span>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:11,fontWeight:700,color:dm?"#f1f5f9":"#0f172a",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{city.name}</div>
+                          <div style={{fontSize:9,color:"#718096"}}>{city.country}</div>
+                        </div>
+                        <span style={{fontSize:11,fontWeight:700,fontFamily:"monospace",color,flexShrink:0}}>{total}€</span>
+                        <button onClick={()=>setItinCities(p=>p.filter(c=>c.id!==city.id))} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,color:"#718096",padding:"0 2px",flexShrink:0}}>✕</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{marginTop:8,padding:"8px 10px",borderRadius:8,background:"rgba(167,139,250,0.08)",border:"1px solid rgba(167,139,250,0.2)"}}>
+                <div style={{fontSize:10,color:"#a78bfa",fontWeight:600}}>🌍 {itinRoute.length} villes · {itinRoute.reduce((s,c)=>s+calcTotal(c,preset,activeKeys,extraCost),0).toLocaleString()}€ total</div>
+              </div>
+            </div>
+
+          ):info&&!itinPanel?(
+            <div style={{background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)",borderRadius:14,border:`1px solid ${CONT_COLORS[info.continent]||"#FF6B35"}40`,padding:16,flex:1}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
                 <span style={{fontSize:36}}>{info.flag}</span>
                 <div style={{flex:1}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <span style={{fontWeight:800,fontSize:16,color:dm?"#f7fafc":"#1a202c"}}>{info.name}</span>
-                    <button onClick={()=>toggleFav(info.id)} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:favorites.has(info.id)?"#FFD700":"#4a5568",transition:"all 0.2s"}}>{favorites.has(info.id)?"★":"☆"}</button>
+                    <button onClick={()=>toggleFav(info.id)} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:favorites.has(info.id)?"#FFD700":"#4a5568"}}>{favorites.has(info.id)?"★":"☆"}</button>
                   </div>
                   <div style={{fontSize:11,color:CONT_COLORS[info.continent]||"#718096"}}>{getCountry(info,lang)} · {getContinent(info.continent,lang)}</div>
                 </div>
@@ -3637,24 +3713,19 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
                 {CATEGORIES.filter(c=>activeKeys.includes(c.key)).map(c=>{
                   const adj=adjustedCosts(info,preset);
-                  return(
-                    <div key={c.key} style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11}}>
-                      <span style={{color:"#a0aec0"}}>{getCatLabel(c,t)}</span>
-                      <span style={{color:dm?"#e2e8f0":"#1a202c",fontFamily:"'Space Mono',monospace",fontSize:12}}>{adj[c.key]} €</span>
-                    </div>
-                  );
+                  return<div key={c.key} style={{display:"flex",justifyContent:"space-between",fontSize:11}}><span style={{color:"#a0aec0"}}>{getCatLabel(c,t)}</span><span style={{color:dm?"#e2e8f0":"#1a202c",fontFamily:"'Space Mono',monospace",fontSize:12}}>{adj[c.key]} €</span></div>;
                 })}
               </div>
               <div style={{marginTop:12,padding:"10px 12px",background:"rgba(255,107,53,0.07)",borderRadius:9,border:"1px solid rgba(255,107,53,0.15)"}}>
-                <div style={{fontSize:10,color:"#FF6B35",marginBottom:4,fontFamily:"'Space Mono',monospace"}}>💡</div>
-                <p style={{margin:0,fontSize:11,color:dm?"#a0aec0":"#4a5568",lineHeight:1.55}}>{getFact(info,lang).substring(0,160)}...</p>
+                <div style={{fontSize:10,color:"#FF6B35",marginBottom:4}}>💡</div>
+                <p style={{margin:0,fontSize:11,color:dm?"#a0aec0":"#4a5568",lineHeight:1.55}}>{getFact(info,lang).substring(0,160)}…</p>
               </div>
             </div>
           ):(
-            <div style={{background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.03)",borderRadius:14,border:dm?"1px solid rgba(255,255,255,0.05)":"1px solid rgba(0,0,0,0.1)",padding:20,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",minHeight:200,gap:12,color:"#4a5568",textAlign:"center"}}>
-              <div style={{fontSize:40}}>🗺️</div>
-              <div style={{fontSize:13,color:dm?"#718096":"#4a5568"}}>Passe la souris ou clique sur une ville</div>
-              <div style={{fontSize:11,color:"#4a5568"}}>{cityPoints.length} villes · zoom {Math.round(zoom*10)/10}×</div>
+            <div style={{background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.03)",borderRadius:14,border:dm?"1px solid rgba(255,255,255,0.05)":"1px solid rgba(0,0,0,0.1)",padding:20,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flex:1,minHeight:200,gap:12,textAlign:"center"}}>
+              <div style={{fontSize:40}}>{itinMode?"✈️":"🗺️"}</div>
+              <div style={{fontSize:13,color:dm?"#718096":"#4a5568"}}>{itinMode?"Clique les villes à visiter":"Survole ou clique une ville"}</div>
+              <div style={{fontSize:11,color:"#4a5568"}}>{cityPoints.length} villes · {Math.round(zoom*10)/10}×</div>
             </div>
           )}
         </div>

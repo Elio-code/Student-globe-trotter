@@ -3067,7 +3067,7 @@ function CategoryPanel({activeKeys,setActiveKeys,extraCost,setExtraCost,extraLab
           const on=activeKeys.includes(c.key);
           return(
             <label key={c.key} onClick={()=>toggle(c.key)} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",padding:"4px 6px",borderRadius:7,background:on?`${c.color}15`:"transparent",border:`1px solid ${on?c.color+"40":darkMode?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.1)"}`,transition:"all 0.15s"}}>
-              <div style={{width:16,height:16,borderRadius:4,border:`2px solid ${on?c.color:`${dm?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.2)"}`}`,background:on?c.color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <div style={{width:16,height:16,borderRadius:4,border:`2px solid ${on?c.color:dm?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.2)"}`,background:on?c.color:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                 {on&&<span style={{color:"#0d1117",fontSize:10,fontWeight:700}}>✓</span>}
               </div>
               <span style={{fontSize:12,color:on?"#f7fafc":"#718096",userSelect:"none"}}>{getCatLabel(c,t)}</span>
@@ -3840,7 +3840,7 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
             const active=activeTags.includes(tag);
             return(
               <button key={tag} onClick={()=>setActiveTags(prev=>active?prev.filter(t=>t!==tag):[...prev,tag])}
-                style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${active?"#a78bfa":`${dm?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.15)"}`}`,background:active?"rgba(167,139,250,0.15)":"transparent",color:active?"#c4b5fd":dm?"#94a3b8":"#374151",fontSize:11,cursor:"pointer",fontWeight:active?700:400}}>
+                style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${active?"#a78bfa":dm?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.15)"}`,background:active?"rgba(167,139,250,0.15)":"transparent",color:active?"#c4b5fd":dm?"#94a3b8":"#374151",fontSize:11,cursor:"pointer",fontWeight:active?700:400}}>
                 {TAG_ICONS[tag]} {tag}
               </button>
             );
@@ -4140,7 +4140,7 @@ export default function App(){
                 ))}
               </div>
               {/* Battle */}
-              <button onClick={()=>{setBattleMode(!battleMode);setActiveTab("cities");}} style={{padding:isMobile?"5px 9px":"5px 12px",borderRadius:7,border:`1px solid ${battleMode?"rgba(255,107,53,0.5)":`${darkMode?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.15)"}`}`,background:battleMode?"rgba(255,107,53,0.15)":"transparent",color:battleMode?"#FF6B35":"#718096",cursor:"pointer",fontSize:isMobile?10:11,fontWeight:600,transition:"all 0.2s"}}>
+              <button onClick={()=>{setBattleMode(!battleMode);setActiveTab("cities");}} style={{padding:isMobile?"5px 9px":"5px 12px",borderRadius:7,border:`1px solid ${battleMode?"rgba(255,107,53,0.5)":darkMode?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.15)"}`,background:battleMode?"rgba(255,107,53,0.15)":"transparent",color:battleMode?"#FF6B35":"#718096",cursor:"pointer",fontSize:isMobile?10:11,fontWeight:600,transition:"all 0.2s"}}>
                 {battleMode?t.battleQuit:t.battleBtn}
               </button>
             </div>
@@ -4166,11 +4166,11 @@ export default function App(){
               const isActive=activeSlot===i;
               return(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:0}}>
-                  <button onClick={()=>setActiveSlot(i)} style={{padding:"4px 10px",borderRadius:"6px 0 0 6px",border:`1px solid ${isActive?color+"80":`${darkMode?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.15)"}`}`,borderRight:"none",background:isActive?color+"20":"rgba(255,255,255,0.03)",color:isActive?color:"#718096",cursor:"pointer",fontSize:11,fontWeight:isActive?700:400,transition:"all 0.15s"}}>
+                  <button onClick={()=>setActiveSlot(i)} style={{padding:"4px 10px",borderRadius:"6px 0 0 6px",border:`1px solid ${isActive?color+"80":darkMode?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.15)"}`,borderRight:"none",background:isActive?color+"20":"rgba(255,255,255,0.03)",color:isActive?color:"#718096",cursor:"pointer",fontSize:11,fontWeight:isActive?700:400,transition:"all 0.15s"}}>
                     {city.flag} {city.name}
                     {isActive&&<span style={{marginLeft:5,fontSize:9,opacity:0.7}}>← cliquer une ville</span>}
                   </button>
-                  <button onClick={()=>{const s=battleSlots.filter((_,j)=>j!==i);setBattleSlots(s);setActiveSlot(Math.min(activeSlot,s.length-1));}} style={{padding:"4px 7px",borderRadius:"0 6px 6px 0",border:`1px solid ${isActive?color+"80":`${darkMode?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.15)"}`}`,background:isActive?color+"20":"rgba(255,255,255,0.03)",color:"#718096",cursor:"pointer",fontSize:11,lineHeight:1,transition:"all 0.15s"}} title="Supprimer">✕</button>
+                  <button onClick={()=>{const s=battleSlots.filter((_,j)=>j!==i);setBattleSlots(s);setActiveSlot(Math.min(activeSlot,s.length-1));}} style={{padding:"4px 7px",borderRadius:"0 6px 6px 0",border:`1px solid ${isActive?color+"80":darkMode?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.15)"}`,background:isActive?color+"20":"rgba(255,255,255,0.03)",color:"#718096",cursor:"pointer",fontSize:11,lineHeight:1,transition:"all 0.15s"}} title="Supprimer">✕</button>
                 </div>
               );
             })}
@@ -4210,7 +4210,7 @@ export default function App(){
               {/* Continents */}
               <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
                 {["Tous",...CONTINENTS.filter(c=>c!=="Tous")].map(c=>(
-                  <button key={c} onClick={()=>setContinent(c)} style={{padding:"3px 9px",borderRadius:20,border:`1px solid ${continent===c?"rgba(255,107,53,0.45)":`${darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`}`,background:continent===c?"rgba(255,107,53,0.12)":"transparent",color:continent===c?"#FF6B35":"#718096",fontSize:10,cursor:"pointer",fontWeight:continent===c?600:400}}>
+                  <button key={c} onClick={()=>setContinent(c)} style={{padding:"3px 9px",borderRadius:20,border:`1px solid ${continent===c?"rgba(255,107,53,0.45)":darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.15)"}`,background:continent===c?"rgba(255,107,53,0.12)":"transparent",color:continent===c?"#FF6B35":"#718096",fontSize:10,cursor:"pointer",fontWeight:continent===c?600:400}}>
                     {c==="Tous"?t.allContinents:getContinent(c,lang)}
                   </button>
                 ))}

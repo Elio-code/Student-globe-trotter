@@ -3381,6 +3381,7 @@ function BudgetInput({label,val,set,color,darkMode=true}){
 function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="fr"}){
   const dm=darkMode;
   const[monthly,setMonthly]=useState(0);
+  const[savings,setSavings]=useState(0);
   const[sortBudget,setSortBudget]=useState("asc");
   const[contFilter,setContFilter]=useState("Tous");
 

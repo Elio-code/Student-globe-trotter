@@ -3850,6 +3850,8 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
       )}
 
 
+      <div style={{display:"flex",flexDirection:isMobile?"column":"row",gap:16}}>
+
       {/* ── SVG MAP ── */}
       <div ref={containerRef} style={{flex:1,background:dm?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.04)",borderRadius:16,border:dm?"1px solid rgba(255,255,255,0.06)":"1px solid rgba(0,0,0,0.12)",overflow:"hidden",position:"relative",userSelect:"none",touchAction:"none"}}>
         <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
@@ -4269,7 +4271,7 @@ export default function App(){
                   const ac=slotIdx>=0?slotColors[slotIdx]:"#FF6B35";
                   const isFav=favorites.has(city.id);
                   return(
-                    <div key={city.id} onClick={()=>handleCityClick(city)} style={{padding:"8px 12px",borderRadius:9,background:isSel?`${ac}14`:darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.04)",border:`1px solid ${isSel?`${ac}45`:darkMode?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.1)"}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",transition:"all 0.15s"}}>
+                    <div key={city.id} onClick={()=>handleCityClick(city)} style={{padding:"8px 12px",borderRadius:9,background:isSel?`${ac}14`:darkMode?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.04)",border:`1px solid ${isSel?(ac+"45"):darkMode?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.1)"}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",transition:"all 0.15s"}}>
                       <div style={{display:"flex",alignItems:"center",gap:9}}>
                         <span style={{fontSize:18}}>{city.flag}</span>
                         <div>
@@ -4314,6 +4316,7 @@ export default function App(){
             </div>
           </div>
         )}
+      </div>
       </div>
 
       <div style={{borderTop:`1px solid ${darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"}`,padding:"10px 24px",textAlign:"center",fontSize:10,color:"#2d3748",fontFamily:"'Space Mono',monospace"}}>

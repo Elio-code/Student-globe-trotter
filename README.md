@@ -3,7 +3,7 @@
 Comparateur de coût de vie pour étudiants en mobilité internationale.
 
 ## ✨ Fonctionnalités
-- **606 villes** sur 6 continents
+- **396 villes** sur 6 continents
 - Carte interactive HD avec **vraies frontières de pays** (TopoJSON Natural Earth 50m)
 - **Zoom & pan** à la molette ou au toucher
 - Calculateur de budget personnalisé

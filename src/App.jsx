@@ -3970,6 +3970,7 @@ function MapView({preset,activeKeys,extraCost,favorites,toggleFav,t,isMobile,lan
                 {itinRoute.map((city,i)=>{
                   const total=calcTotal(city,preset,activeKeys,extraCost);const color=CONT_COLORS[city.continent]||"#aaa";
                   const dist=i>0?haversine(itinRoute[i-1],city):null;
+                  return(
                     <div key={city.id}>
                       {dist&&<div style={{paddingLeft:16,fontSize:9,color:"#a78bfa",fontFamily:"monospace",margin:"2px 0"}}>│ {dist.toLocaleString()} km ↓</div>}
                       <div style={{display:"flex",alignItems:"center",gap:7,padding:"7px 9px",borderRadius:9,background:dm?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.03)",border:`1px solid ${color}22`}}>

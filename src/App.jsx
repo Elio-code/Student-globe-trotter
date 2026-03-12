@@ -3091,6 +3091,7 @@ function CategoryPanel({activeKeys,setActiveKeys,extraCost,setExtraCost,extraLab
 
 // ── DETAIL VIEW ──
 function DetailView({city,preset,isMobile,activeKeys,extraCost,extraLabel,favorites,toggleFav,t,lang,darkMode,notes={},updateNote}){
+  const dm=darkMode;
   const[showSafetyInfo,setShowSafetyInfo]=useState(false);
   useEffect(()=>setShowSafetyInfo(false),[city.id]);
   const adj=adjustedCosts(city,preset);
@@ -3358,6 +3359,7 @@ function useHoldStep(set,dir){
 
 // ── BUDGET INPUT WITH HOLD-TO-REPEAT ──
 function BudgetInput({label,val,set,color,darkMode=true}){
+  const dm=darkMode;
   const holdUp=useHoldStep(set,1);
   const holdDn=useHoldStep(set,-1);
   return(
@@ -3378,7 +3380,7 @@ function BudgetInput({label,val,set,color,darkMode=true}){
 
 // ── MON BUDGET TAB ──
 function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="fr"}){
-  const[savings,setSavings]=useState(5000);
+  const dm=darkMode;
   const[monthly,setMonthly]=useState(0);
   const[sortBudget,setSortBudget]=useState("asc");
   const[contFilter,setContFilter]=useState("Tous");

@@ -3243,6 +3243,7 @@ function DetailView({city,preset,isMobile,activeKeys,extraCost,extraLabel,favori
         </div>
       </div>
     </div>
+    </div>
   );
 }
 
@@ -4316,7 +4317,6 @@ export default function App(){
             </div>
           </div>
         )}
-      </div>
       </div>
 
       <div style={{borderTop:`1px solid ${darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.15)"}`,padding:"10px 24px",textAlign:"center",fontSize:10,color:"#2d3748",fontFamily:"'Space Mono',monospace"}}>

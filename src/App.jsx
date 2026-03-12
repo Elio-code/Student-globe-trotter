@@ -3357,7 +3357,7 @@ function useHoldStep(set,dir){
 }
 
 // ── BUDGET INPUT WITH HOLD-TO-REPEAT ──
-function BudgetInput({label,val,set,color}){
+function BudgetInput({label,val,set,color,darkMode=true}){
   const holdUp=useHoldStep(set,1);
   const holdDn=useHoldStep(set,-1);
   return(
@@ -3411,7 +3411,7 @@ function BudgetTab({preset,activeKeys,extraCost,t,isMobile,darkMode=true,lang="f
             {label:t.budgetSavings,val:savings,set:setSavings,color:"#FF6B35"},
           ];
           return fields.map(({label,val,set,color})=>(
-            <BudgetInput key={label} label={label} val={val} set={set} color={color}/>
+            <BudgetInput key={label} label={label} val={val} set={set} color={color} darkMode={darkMode}/>
           ));
         })()}
       </div>

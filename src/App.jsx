@@ -3243,7 +3243,6 @@ function DetailView({city,preset,isMobile,activeKeys,extraCost,extraLabel,favori
         </div>
       </div>
     </div>
-  </div>
   );
 }
 
